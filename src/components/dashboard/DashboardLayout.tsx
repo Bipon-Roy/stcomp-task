@@ -31,7 +31,6 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             <Box
                component="main"
                sx={{
-                  p: 2,
                   flexGrow: 1,
                   boxSizing: "border-box",
                }}
