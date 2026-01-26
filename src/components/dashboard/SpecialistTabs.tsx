@@ -3,6 +3,7 @@ import * as React from "react";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Box from "@mui/material/Box";
+import ServicesTable from "./ServicesTable";
 
 interface TabPanelProps {
    children?: React.ReactNode;
@@ -75,7 +76,7 @@ export default function SpecialistTabs() {
             </Tabs>
          </Box>
          <CustomTabPanel value={value} index={0}>
-            Item One
+            <ServicesTable />
          </CustomTabPanel>
          <CustomTabPanel value={value} index={1}>
             Item Two

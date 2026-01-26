@@ -59,8 +59,10 @@ function NavList({ items, onNavigate }: { items: NavItem[]; onNavigate?: () => v
                      </ListItemIcon>
                      <ListItemText
                         primary={item.label}
-                        primaryTypographyProps={{
-                           fontSize: 14,
+                        slotProps={{
+                           primary: {
+                              fontSize: 14,
+                           },
                         }}
                      />
                   </ListItemButton>

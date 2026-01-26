@@ -16,7 +16,7 @@ export default function SpecialistsPage() {
             </Typography>
          </Stack>
 
-         <Box sx={{ py: 2, bgcolor: "#FFF", px: 6 }}>
+         <Box sx={{ py: 2, px: { xs: 1, md: 6 }, bgcolor: "#FFF" }}>
             <Stack spacing={1} sx={{ mt: 1 }}>
                <Typography variant="h4" sx={{ color: "#000000", letterSpacing: 0.3, fontWeight: 600 }}>
                   Specialists
