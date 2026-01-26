@@ -43,7 +43,7 @@ function NavList({ items, onNavigate }: { items: NavItem[]; onNavigate?: () => v
                         borderRadius: 1.5,
                         py: 1,
                         bgcolor: active ? "#002F70" : "transparent",
-                        color: active ? "primary.contrastText" : "text.primary",
+                        color: active ? "#fff" : "#484848",
                         "&:hover": {
                            bgcolor: active ? "#002F70" : "action.hover",
                         },
@@ -94,10 +94,10 @@ export function DashboardSidebar({ open, onClose }: DashboardSidebarProps) {
             <Stack direction="row" alignItems="center" sx={{ mt: 2 }} spacing={1.25}>
                <Avatar sx={{ width: 40, height: 40 }}>G</Avatar>
                <Box sx={{ minWidth: 0 }}>
-                  <Typography variant="body1" color="#454545" sx={{ fontWeight: 600, fontSize: 13 }}>
+                  <Typography variant="body1" color="#454545" sx={{ fontWeight: 500, fontSize: 13 }}>
                      Gwen Lam{" "}
                   </Typography>
-                  <Typography variant="body1" color="#002F70" sx={{ fontSize: 10, fontWeight: 700 }}>
+                  <Typography variant="body1" color="#002F70" sx={{ fontSize: 10, fontWeight: 500 }}>
                      ST Comp Holdings Sdn Bhd
                   </Typography>
                </Box>
@@ -108,7 +108,7 @@ export function DashboardSidebar({ open, onClose }: DashboardSidebarProps) {
          <Box sx={{ pt: 1, mt: 4 }}>
             <Typography
                variant="caption"
-               sx={{ px: 2, color: "text.secondary", fontWeight: 700, letterSpacing: 0.3, pl: 4 }}
+               sx={{ px: 2, color: "text.secondary", fontWeight: 500, letterSpacing: 0.3, pl: 4 }}
             >
                Dashboard
             </Typography>
