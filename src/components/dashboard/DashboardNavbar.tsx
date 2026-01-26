@@ -11,6 +11,7 @@ import Badge from "@mui/material/Badge";
 import MailOutlineOutlinedIcon from "@mui/icons-material/MailOutlineOutlined";
 import NotificationsNoneOutlinedIcon from "@mui/icons-material/NotificationsNoneOutlined";
 import MenuIcon from "@mui/icons-material/Menu";
+import { useIsMobile } from "@/hooks/useMobile";
 
 type DashboardNavbarProps = {
    onOpenSidebar: () => void;
@@ -18,14 +19,19 @@ type DashboardNavbarProps = {
 };
 
 export function DashboardNavbar({ onOpenSidebar, showMenuButton = true }: DashboardNavbarProps) {
+   const isMobile = useIsMobile();
+
    return (
       <AppBar
          position="sticky"
-         elevation={0}
+         elevation={1}
          sx={{
-            bgcolor: "background.paper",
+            bgcolor: "#fff",
             color: "text.primary",
-            borderBottom: (t) => `1px solid ${t.palette.divider}`,
+            mt: { xs: 0, md: 3 },
+            ml: isMobile ? 0 : "16px",
+            width: isMobile ? "100%" : `calc(100% - 50px)`,
+            boxShadow: "0 1px 4px rgba(0,0,0,0.10)",
          }}
       >
          <Toolbar sx={{ minHeight: 64, px: 2 }}>
@@ -39,26 +45,24 @@ export function DashboardNavbar({ onOpenSidebar, showMenuButton = true }: Dashbo
 
             <Box sx={{ flex: 1 }} />
 
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mr: 6 }}>
                <Tooltip title="Messages">
-                  <IconButton aria-label="messages">
-                     <Badge variant="dot" color="error">
-                        <MailOutlineOutlinedIcon />
-                     </Badge>
+                  <IconButton aria-label="messages" sx={{ p: 0 }}>
+                     <MailOutlineOutlinedIcon fontSize="small" />
                   </IconButton>
                </Tooltip>
 
                <Tooltip title="Notifications">
-                  <IconButton aria-label="notifications">
-                     <Badge badgeContent={2} color="error">
+                  <IconButton aria-label="notifications" sx={{ p: 0 }}>
+                     <Badge badgeContent={4} color="error">
                         <NotificationsNoneOutlinedIcon />
                      </Badge>
                   </IconButton>
                </Tooltip>
 
                <Tooltip title="Profile">
-                  <IconButton aria-label="profile">
-                     <Avatar sx={{ width: 32, height: 32 }}>G</Avatar>
+                  <IconButton aria-label="profile" sx={{ p: 0 }}>
+                     <Avatar sx={{ width: 25, height: 25 }}>G</Avatar>
                   </IconButton>
                </Tooltip>
             </Box>

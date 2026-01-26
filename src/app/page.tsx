@@ -1,5 +1,9 @@
-import { DashboardShell } from "@/components/dashboard/DashboardShell";
+import Link from "next/link";
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-   return <DashboardShell>{children}</DashboardShell>;
+export default function Home() {
+   return (
+      <div className="m-3">
+         <Link href="/dashboard/specialists">Dashboard</Link>
+      </div>
+   );
 }

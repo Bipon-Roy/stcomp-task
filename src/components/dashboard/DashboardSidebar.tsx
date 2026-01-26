@@ -7,18 +7,16 @@ import Drawer from "@mui/material/Drawer";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-import Divider from "@mui/material/Divider";
 import List from "@mui/material/List";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import Avatar from "@mui/material/Avatar";
-
 import type { NavItem } from "./nav-config";
 import { primaryNav, secondaryNav } from "./nav-config";
 import { useIsMobile } from "../../hooks/useMobile";
 
-const SIDEBAR_WIDTH = 260;
+const SIDEBAR_WIDTH = 300;
 
 type DashboardSidebarProps = {
    open: boolean;
@@ -29,30 +27,31 @@ function NavList({ items, onNavigate }: { items: NavItem[]; onNavigate?: () => v
    const pathname = usePathname();
 
    return (
-      <List disablePadding sx={{ px: 1 }}>
+      <List disablePadding>
          {items.map((item) => {
             const active = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
 
             return (
-               <Box key={item.key} sx={{ mb: 0.5 }}>
+               <Box key={item.key}>
                   <ListItemButton
                      component={Link}
                      href={item.href}
                      onClick={onNavigate}
                      sx={{
+                        ml: 0.5,
+                        pl: 4,
                         borderRadius: 1.5,
-                        px: 1.25,
                         py: 1,
-                        bgcolor: active ? "primary.main" : "transparent",
+                        bgcolor: active ? "#002F70" : "transparent",
                         color: active ? "primary.contrastText" : "text.primary",
                         "&:hover": {
-                           bgcolor: active ? "primary.main" : "action.hover",
+                           bgcolor: active ? "#002F70" : "action.hover",
                         },
                      }}
                   >
                      <ListItemIcon
                         sx={{
-                           minWidth: 38,
+                           minWidth: 35,
                            color: active ? "primary.contrastText" : "text.secondary",
                         }}
                      >
@@ -62,7 +61,6 @@ function NavList({ items, onNavigate }: { items: NavItem[]; onNavigate?: () => v
                         primary={item.label}
                         primaryTypographyProps={{
                            fontSize: 14,
-                           fontWeight: active ? 600 : 500,
                         }}
                      />
                   </ListItemButton>
@@ -79,44 +77,48 @@ export function DashboardSidebar({ open, onClose }: DashboardSidebarProps) {
    const content = (
       <Box
          sx={{
+            pr: 1,
             height: "100%",
             display: "flex",
             flexDirection: "column",
-            bgcolor: "background.paper",
+            bgcolor: "#ffffff",
          }}
          role="navigation"
          aria-label="sidebar navigation"
       >
          {/* Top profile block */}
-         <Stack direction="row" spacing={1.25} sx={{ px: 2, py: 2 }}>
-            <Avatar sx={{ width: 40, height: 40 }}>G</Avatar>
-            <Box sx={{ minWidth: 0 }}>
-               <Typography variant="subtitle2" noWrap sx={{ fontWeight: 700 }}>
-                  Gwen Lam
-               </Typography>
-               <Typography variant="caption" color="text.secondary" noWrap>
-                  ST Comp Holdings Sdn Bhd
-               </Typography>
-            </Box>
-         </Stack>
-
-         <Divider />
+         <Box sx={{ pl: 4 }}>
+            <Typography variant="subtitle1" color="#222222" noWrap sx={{ fontWeight: 600, mt: 5 }}>
+               Profile
+            </Typography>
+            <Stack direction="row" alignItems="center" sx={{ mt: 2 }} spacing={1.25}>
+               <Avatar sx={{ width: 40, height: 40 }}>G</Avatar>
+               <Box sx={{ minWidth: 0 }}>
+                  <Typography variant="body1" color="#454545" sx={{ fontWeight: 600, fontSize: 13 }}>
+                     Gwen Lam{" "}
+                  </Typography>
+                  <Typography variant="body1" color="#002F70" sx={{ fontSize: 10, fontWeight: 700 }}>
+                     ST Comp Holdings Sdn Bhd
+                  </Typography>
+               </Box>
+            </Stack>
+         </Box>
 
          {/* Main nav */}
-         <Box sx={{ pt: 1 }}>
-            <Typography variant="caption" sx={{ px: 2, color: "text.secondary", fontWeight: 700, letterSpacing: 0.3 }}>
+         <Box sx={{ pt: 1, mt: 4 }}>
+            <Typography
+               variant="caption"
+               sx={{ px: 2, color: "text.secondary", fontWeight: 700, letterSpacing: 0.3, pl: 4 }}
+            >
                Dashboard
             </Typography>
-            <Box sx={{ mt: 1 }}>
+            <Box sx={{ mt: 1.5 }}>
                <NavList items={primaryNav} onNavigate={isMobile ? onClose : undefined} />
             </Box>
          </Box>
 
-         <Box sx={{ flex: 1 }} />
-
          {/* Bottom nav */}
-         <Box sx={{ pb: 1 }}>
-            <Divider sx={{ mb: 1 }} />
+         <Box sx={{ pb: 1, mt: 10 }}>
             <NavList items={secondaryNav} onNavigate={isMobile ? onClose : undefined} />
          </Box>
       </Box>
@@ -134,7 +136,7 @@ export function DashboardSidebar({ open, onClose }: DashboardSidebarProps) {
             "& .MuiDrawer-paper": {
                width: SIDEBAR_WIDTH,
                boxSizing: "border-box",
-               borderRight: (t) => `1px solid ${t.palette.divider}`,
+               borderRight: "none",
             },
          }}
       >
