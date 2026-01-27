@@ -1,9 +1,25 @@
+"use client";
+
 import ProfessionalFeePanel from "@/components/dashboard/create-specialist/ProfessionalFeePanel";
+import { ServiceEditDrawer } from "@/components/dashboard/create-specialist/ServiceEditDrawer";
 import ServiceLeftPanel from "@/components/dashboard/create-specialist/ServiceLeftPanel";
+import { ServiceFormValues } from "@/types";
+import { serviceOptions } from "@/utils/serviceOffers";
 import { Stack, Typography, Button, Grid } from "@mui/material";
 import { Box } from "@mui/material";
+import { useState } from "react";
 
 export default function CreateSpecialistPage() {
+   const [drawerOpen, setDrawerOpen] = useState(false);
+   const [displayData, setDisplayData] = useState<ServiceFormValues>({
+      title: "Private Limited - Sdn Bhd",
+      description: "Describe your service here",
+      estimatedDays: 1,
+      currency: "MYR",
+      price: "0.00",
+      additionalOfferings: ["Company Secretary Subscription", "CTC Copies", "eSignature"],
+      images: [null, null, null],
+   });
    return (
       <Box sx={{ mt: 1, p: 2, bgcolor: "#fff" }}>
          <Stack
@@ -26,6 +42,7 @@ export default function CreateSpecialistPage() {
             <Stack direction="row" spacing={1.25}>
                <Button
                   variant="contained"
+                  onClick={() => setDrawerOpen(true)}
                   sx={{
                      bgcolor: "#071331",
                      px: 5,
@@ -62,6 +79,17 @@ export default function CreateSpecialistPage() {
                </Box>
             </Grid>
          </Grid>
+         <ServiceEditDrawer
+            open={drawerOpen}
+            onClose={() => setDrawerOpen(false)}
+            mode="edit"
+            initialValues={displayData}
+            additionalOfferingOptions={serviceOptions}
+            onConfirm={(values) => {
+               setDisplayData(values);
+               setDrawerOpen(false);
+            }}
+         />
       </Box>
    );
 }

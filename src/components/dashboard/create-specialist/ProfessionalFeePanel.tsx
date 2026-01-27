@@ -8,7 +8,7 @@ export default function ProfessionalFeePanel() {
          sx={{
             borderRadius: 0,
             border: "none",
-            boxShadow: "0px 12px 28px rgba(17,14,10,0.25)",
+            boxShadow: "0px 12px 28px rgba(17,14,8,0.15)",
          }}
       >
          <CardContent sx={{ p: 4 }}>
@@ -35,47 +35,27 @@ export default function ProfessionalFeePanel() {
             </Box>
 
             <Stack spacing={1.4} sx={{ mt: 4 }}>
-               <FeeRow label="Base price" value="RM 1,800" />
-
-               <FeeRow
-                  label={
-                     <Typography
-                        component="span"
-                        sx={{
-                           textDecoration: "underline",
-                           textDecorationColor: "#222222",
-                           textUnderlineOffset: "3px",
-                        }}
-                     >
-                        Service processing fee
-                     </Typography>
-                  }
-                  value="RM 540"
-               />
-
-               <FeeRow label="Total" value="RM 2340" />
+               <div className="flex items-center justify-between font-medium">
+                  <p className="text-[#454545]">Base price</p>
+                  <p className="text-[#222222]">RM 1,800</p>
+               </div>
+               <div className="flex items-center justify-between font-medium">
+                  <p className="text-[#454545]">Service processing fee</p>
+                  <p className="text-[#222222]">RM 540</p>
+               </div>
+               <div className="flex items-center justify-between font-medium">
+                  <p className="text-[#454545]">Total</p>
+                  <p className="text-[#222222]">RM 2340</p>
+               </div>
             </Stack>
 
             <Divider sx={{ my: 2.25 }} />
 
-            <FeeRow
-               label={<Typography sx={{ fontWeight: 700 }}>Your returns</Typography>}
-               value={<Typography sx={{ fontWeight: 600, color: "#222222" }}>RM 1,800</Typography>}
-            />
+            <div className="flex items-center justify-between font-medium">
+               <p className="text-[#454545]">Your returns</p>
+               <p className="text-[#222222]">RM 1,800</p>
+            </div>
          </CardContent>
       </Card>
-   );
-}
-
-function FeeRow(props: { label: React.ReactNode; value: React.ReactNode }) {
-   return (
-      <Stack direction="row" justifyContent="space-between" alignItems="center">
-         <Typography variant="body2" sx={{ color: "#6B7280" }}>
-            {props.label}
-         </Typography>
-         <Typography variant="body2" sx={{ color: "#111827", fontWeight: 700 }}>
-            {props.value}
-         </Typography>
-      </Stack>
    );
 }
