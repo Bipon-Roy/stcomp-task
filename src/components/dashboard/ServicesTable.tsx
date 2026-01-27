@@ -32,6 +32,7 @@ import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import Link from "next/link";
 
 type ApprovalStatus = "Approved" | "Under-Review" | "Rejected";
 type PublishStatus = "Published" | "Not Published";
@@ -245,6 +246,8 @@ export default function ServicesTable() {
 
             <Stack direction="row" spacing={1.5} justifyContent={isMdDown ? "flex-end" : "flex-start"}>
                <Button
+                  component={Link}
+                  href="/dashboard/specialists/create"
                   variant="contained"
                   startIcon={<AddCircleOutlineIcon />}
                   sx={{
@@ -344,25 +347,25 @@ export default function ServicesTable() {
                            </TableCell>
 
                            <TableCell>
-                              <Typography fontWeight={600} color="#454545">
+                              <Typography fontWeight={500} color="#454545">
                                  {row.service}
                               </Typography>
                            </TableCell>
 
                            <TableCell>
-                              <Typography fontWeight={600} color="#454545">
+                              <Typography fontWeight={500} color="#454545">
                                  {row.price}
                               </Typography>
                            </TableCell>
 
                            <TableCell>
-                              <Typography fontWeight={600} color="#454545">
+                              <Typography fontWeight={500} color="#454545">
                                  {row.purchases.toLocaleString()}
                               </Typography>
                            </TableCell>
 
                            <TableCell>
-                              <Typography fontWeight={600} color="#454545">
+                              <Typography fontWeight={500} color="#454545">
                                  {row.duration}
                               </Typography>
                            </TableCell>
