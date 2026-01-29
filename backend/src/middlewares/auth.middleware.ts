@@ -23,7 +23,6 @@ const verifyJwtTokenAndGetUser = async (accessToken: string, res: Response) => {
 
         const user = await userRepo.findOne({
             where: { id: decoded.id },
-            select: ["id", "refreshToken", "accessToken"],
         });
         if (!user) {
             throw new ApiError(401, "User not found");

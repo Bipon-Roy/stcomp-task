@@ -28,7 +28,14 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const getCurrentUser = asyncHandler(async (req: Request, res: Response) => {
-    return res.status(200).json(new ApiResponse(200, req.user, "User fetched successfully"));
+    const data = req.user;
+
+    const user = {
+        id: data?.id,
+        name: data?.name,
+        email: data?.email,
+    };
+    return res.status(200).json(new ApiResponse(200, user, "User fetched successfully"));
 });
 
 export const refreshTokenController = asyncHandler(async (req, res) => {

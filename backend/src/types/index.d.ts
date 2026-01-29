@@ -3,6 +3,7 @@ import { Express } from "express";
 interface UserDocument {
     id: string;
     name?: string;
+    email?: string;
 }
 
 declare global {
