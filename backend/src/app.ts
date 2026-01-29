@@ -1,10 +1,10 @@
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-
-import { corsConfig } from "./src/config/cors";
-import { notFoundHandler } from "./src/middlewares/notFound.middleware";
-import { errorHandler } from "./src/middlewares/errorHandler";
+import authRoutes from "./routes/auth.routes";
+import { corsConfig } from "./config/cors";
+import { notFoundHandler } from "./middlewares/notFound.middleware";
+import { errorHandler } from "./middlewares/errorHandler";
 
 const app = express();
 
@@ -24,6 +24,7 @@ app.get("/", (req, res) => {
         message: "The Server is running",
     });
 });
+app.use("/api/v1/auth", authRoutes);
 
 // Handle 404 errors (non-existent routes)
 app.use(notFoundHandler);

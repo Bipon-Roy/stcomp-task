@@ -207,7 +207,7 @@ export default function Navbar() {
 
                   <Tooltip title="Account">
                      <IconButton aria-label="account">
-                        <Avatar sx={{ width: 28, height: 28 }} alt="User" src="/avatar.webp" />
+                        <Avatar sx={{ width: 32, height: 32 }} alt="User" src="/avatar.svg" />
                      </IconButton>
                   </Tooltip>
                </Stack>
@@ -219,7 +219,7 @@ export default function Navbar() {
             open={mobileOpen}
             onClose={toggleDrawer}
             ModalProps={{ keepMounted: true }}
-            PaperProps={{ sx: { borderTopRightRadius: 16, borderBottomRightRadius: 16 } }}
+            slotProps={{ paper: { sx: { borderTopRightRadius: 16, borderBottomRightRadius: 16 } } }}
          >
             {drawer}
          </Drawer>

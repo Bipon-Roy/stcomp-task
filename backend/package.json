@@ -3,9 +3,9 @@
     "version": "1.0.0",
     "main": "index.js",
     "scripts": {
-        "dev": "ts-node-dev --respawn --transpile-only server.ts",
+        "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
         "build": "tsc",
-        "start": "node dist/server.js"
+        "start": "node src/dist/server.js"
     },
     "keywords": [],
     "author": "",
@@ -19,7 +19,8 @@
         "express": "^5.2.1",
         "pg": "^8.17.2",
         "reflect-metadata": "^0.2.2",
-        "typeorm": "^0.3.28"
+        "typeorm": "^0.3.28",
+        "zod": "^4.3.6"
     },
     "devDependencies": {
         "@types/cookie-parser": "^1.4.10",
