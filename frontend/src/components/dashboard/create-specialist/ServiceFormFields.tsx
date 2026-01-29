@@ -7,11 +7,11 @@ import { ImageUploadField } from "./ImageUploadField";
 import { ServiceFormValues } from "@/types";
 import Image from "next/image";
 
-type Props = {
+interface Props {
    value: ServiceFormValues;
    onChange: (next: ServiceFormValues) => void;
    additionalOfferingOptions: string[];
-};
+}
 
 const DESCRIPTION_MAX_WORDS = 500;
 
@@ -36,7 +36,7 @@ export function ServiceFormFields({ value, onChange, additionalOfferingOptions }
       <Stack spacing={2.25}>
          {/* Title */}
          <Box>
-            <Typography sx={{ fontSize: 14, fontWeight: 500, color: "#222", mb: 0.75 }}>Title</Typography>
+            <Typography sx={{ fontSize: 14, fontWeight: 500, color: "#222222", mb: 0.75 }}>Title</Typography>
             <TextField
                fullWidth
                size="small"
@@ -48,7 +48,7 @@ export function ServiceFormFields({ value, onChange, additionalOfferingOptions }
 
          {/* Description */}
          <Box>
-            <Typography sx={{ fontSize: 14, fontWeight: 500, color: "#222", mb: 0.75 }}>Description</Typography>
+            <Typography sx={{ fontSize: 14, fontWeight: 500, color: "#222222", mb: 0.75 }}>Description</Typography>
             <TextField
                fullWidth
                multiline
@@ -66,7 +66,7 @@ export function ServiceFormFields({ value, onChange, additionalOfferingOptions }
 
          {/* Estimated Completion Time */}
          <Box>
-            <Typography sx={{ fontSize: 14, fontWeight: 500, color: "#222", mb: 0.75 }}>
+            <Typography sx={{ fontSize: 14, fontWeight: 500, color: "#222222", mb: 0.75 }}>
                Estimated Completion Time (Days)
             </Typography>
             <FormControl fullWidth size="small">
@@ -82,12 +82,12 @@ export function ServiceFormFields({ value, onChange, additionalOfferingOptions }
 
          {/* Price */}
          <Box>
-            <Typography sx={{ fontSize: 14, fontWeight: 500, color: "#222", mb: 0.75 }}>Price</Typography>
+            <Typography sx={{ fontSize: 14, fontWeight: 500, color: "#222222", mb: 0.75 }}>Price</Typography>
             <div className="flex w-full border border-gray-300 rounded overflow-hidden focus-within:ring-2 focus-within:ring-blue-600/90">
                {/* Left currency block */}
                <div className="flex items-center gap-1.5 bg-gray-100 px-3">
                   <Image src="/flag2.jpg" width={20} height={14} alt="Currency Flag" />
-                  <span className="text-sm text-[#222222] font-medium">{value.currency}</span>
+                  <span className="text-sm text-[#222222]">{value.currency}</span>
                </div>
 
                {/* Input */}
@@ -104,7 +104,7 @@ export function ServiceFormFields({ value, onChange, additionalOfferingOptions }
 
          {/* Additional Offerings */}
          <Box>
-            <Typography sx={{ fontSize: 14, fontWeight: 500, color: "#222", mb: 0.75 }}>
+            <Typography sx={{ fontSize: 14, fontWeight: 500, color: "#222222", mb: 0.75 }}>
                Additional Offerings
             </Typography>
 

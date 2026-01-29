@@ -5,13 +5,13 @@ import { Box, Button, IconButton, Paper, Stack, Typography } from "@mui/material
 import CloudUploadOutlinedIcon from "@mui/icons-material/CloudUploadOutlined";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 
-type Props = {
+interface Props {
    label: string;
    file: File | null;
    onChange: (file: File | null) => void;
    accept?: string;
    maxSizeMb?: number;
-};
+}
 
 function formatBytes(bytes: number) {
    if (!bytes && bytes !== 0) return "";
@@ -63,15 +63,16 @@ export function ImageUploadField({
 
    return (
       <Stack spacing={1.25}>
-         <Typography sx={{ fontSize: 12, fontWeight: 600, color: "#222" }}>{label}</Typography>
+         <Typography sx={{ fontSize: 14, fontWeight: 500, color: "#222222" }}>{label}</Typography>
 
          {/* Dropzone-like box */}
          <Paper
             variant="outlined"
             sx={{
+               borderWidth: "2px",
                borderStyle: "dashed",
-               borderColor: "#C7CDD6",
-               borderRadius: 2,
+               borderColor: "#000000",
+               borderRadius: 1,
                p: 2,
                minHeight: 140,
                display: "flex",
@@ -100,15 +101,15 @@ export function ImageUploadField({
                   Browse
                </Button>
 
-               <Typography sx={{ fontSize: 11, color: "#667085" }}>Drag a file to upload</Typography>
-
-               <Stack direction="row" justifyContent="space-between" sx={{ width: "100%", mt: 1 }}>
-                  <Typography sx={{ fontSize: 10, color: "#667085" }}>Accepted: JPG, PNG, WEBP</Typography>
-                  <Typography sx={{ fontSize: 10, color: "#667085" }}>Max: {maxSizeMb}MB</Typography>
-               </Stack>
+               <Typography sx={{ fontSize: 12, color: "#888888", fontWeight: 400 }}>Drag a file to upload</Typography>
             </Stack>
          </Paper>
-
+         <Stack direction="row" justifyContent="space-between" sx={{ width: "100%", mt: 1 }}>
+            <Typography sx={{ fontSize: 12, color: "#888888", fontWeight: 400 }}>Accepted: JPG, PNG, WEBP</Typography>
+            <Typography sx={{ fontSize: 12, color: "#888888", fontWeight: 400 }}>
+               Maximum file size: {maxSizeMb}MB
+            </Typography>
+         </Stack>
          {/* File card */}
          {file && (
             <Paper
@@ -157,14 +158,14 @@ export function ImageUploadField({
                   >
                      {file.name}
                   </Typography>
-                  <Typography sx={{ fontSize: 11, color: "#667085" }}>
+                  <Typography sx={{ fontSize: 11, color: "#888888" }}>
                      Size: {formatBytes(file.size)} • Type:{" "}
                      {(file.type || "").toUpperCase().replace("IMAGE/", "") || "—"}
                   </Typography>
                </Box>
 
                <IconButton size="small" onClick={() => onChange(null)} aria-label="remove file">
-                  <DeleteOutlineIcon fontSize="small" />
+                  <DeleteOutlineIcon fontSize="small" color="warning" />
                </IconButton>
             </Paper>
          )}

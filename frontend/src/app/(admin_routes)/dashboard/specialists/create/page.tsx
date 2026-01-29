@@ -12,12 +12,12 @@ import { useState } from "react";
 export default function CreateSpecialistPage() {
    const [drawerOpen, setDrawerOpen] = useState(false);
    const [displayData, setDisplayData] = useState<ServiceFormValues>({
-      title: "Private Limited - Sdn Bhd",
-      description: "Describe your service here",
+      title: "",
+      description: "",
       estimatedDays: 1,
       currency: "MYR",
       price: "0.00",
-      additionalOfferings: ["Company Secretary Subscription", "CTC Copies", "eSignature"],
+      additionalOfferings: [],
       images: [null, null, null],
    });
    return (

@@ -6,14 +6,14 @@ import CloseIcon from "@mui/icons-material/Close";
 import { ServiceFormFields } from "./ServiceFormFields";
 import { ServiceFormValues } from "@/types";
 
-type Props = {
+interface Props {
    open: boolean;
    onClose: () => void;
    mode?: "create" | "edit";
    initialValues: ServiceFormValues;
    onConfirm: (values: ServiceFormValues) => void;
    additionalOfferingOptions: string[];
-};
+}
 
 export function ServiceEditDrawer({
    open,
