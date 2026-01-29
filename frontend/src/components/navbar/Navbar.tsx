@@ -3,6 +3,8 @@
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+
 import {
    AppBar,
    Avatar,
@@ -12,18 +14,29 @@ import {
    Divider,
    Drawer,
    IconButton,
+   InputBase,
+   Menu,
+   MenuItem,
    Stack,
    Toolbar,
    Tooltip,
+   Typography,
    useMediaQuery,
+   useTheme,
+   ListItemIcon,
 } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
+
 import MenuIcon from "@mui/icons-material/Menu";
 import SearchIcon from "@mui/icons-material/Search";
 import MailOutlineIcon from "@mui/icons-material/MailOutline";
 import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
-import InputBase from "@mui/material/InputBase";
+import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
+import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
+
+import { UserResponse } from "@/types";
 import { navLinks } from "./nav-links";
+import { useAuthStore } from "@/store/authStore";
+import { getCookie } from "@/utils/getCookie";
 
 function NavLinkButton({ href, children }: { href: string; children: React.ReactNode }) {
    return (
@@ -35,7 +48,8 @@ function NavLinkButton({ href, children }: { href: string; children: React.React
             color: "text.primary",
             textTransform: "none",
             fontWeight: 500,
-            px: 1,
+            pr: 1,
+            pl: 0,
             "&:hover": { bgcolor: "transparent", color: "#002F70" },
          }}
       >
@@ -43,13 +57,40 @@ function NavLinkButton({ href, children }: { href: string; children: React.React
       </Button>
    );
 }
-
 export default function Navbar() {
    const theme = useTheme();
    const isLgUp = useMediaQuery(theme.breakpoints.up("lg"));
+   const router = useRouter();
    const [mobileOpen, setMobileOpen] = React.useState(false);
-
    const toggleDrawer = () => setMobileOpen((p) => !p);
+   const { user, logout, isLoading, currentUser, isCheckingAuth } = useAuthStore();
+
+   console.log(isCheckingAuth);
+
+   // Avatar menu
+   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+   const menuOpen = Boolean(anchorEl);
+
+   const handleAvatarClick = (e: React.MouseEvent<HTMLElement>) => setAnchorEl(e.currentTarget);
+   const handleCloseMenu = () => setAnchorEl(null);
+
+   const handleGoDashboard = () => {
+      handleCloseMenu();
+      router.push("/dashboard/specialists");
+   };
+
+   const handleLogout = async () => {
+      handleCloseMenu();
+      await logout();
+      router.push("/signin");
+   };
+
+   React.useEffect(() => {
+      const accessToken = getCookie("accessToken");
+      if (accessToken) {
+         currentUser();
+      }
+   }, [currentUser]);
 
    const drawer = (
       <Box sx={{ width: 320, p: 2 }}>
@@ -60,30 +101,27 @@ export default function Navbar() {
          <Divider sx={{ mb: 1.5 }} />
 
          <Stack spacing={0.5}>
-            {navLinks.map((item) => {
-               return (
-                  <Button
-                     key={item.href}
-                     component={Link}
-                     href={item.href!}
-                     onClick={() => setMobileOpen(false)}
-                     sx={{
-                        justifyContent: "flex-start",
-                        textTransform: "none",
-                        color: "text.primary",
-                        borderRadius: 1.5,
-                        px: 1,
-                     }}
-                  >
-                     {item.label}
-                  </Button>
-               );
-            })}
+            {navLinks.map((item) => (
+               <Button
+                  key={item.href}
+                  component={Link}
+                  href={item.href!}
+                  onClick={() => setMobileOpen(false)}
+                  sx={{
+                     justifyContent: "flex-start",
+                     textTransform: "none",
+                     color: "text.primary",
+                     borderRadius: 1.5,
+                     px: 1,
+                  }}
+               >
+                  {item.label}
+               </Button>
+            ))}
          </Stack>
 
          <Divider sx={{ my: 2 }} />
 
-         {/* Mobile search */}
          <Box
             sx={{
                display: "flex",
@@ -111,10 +149,10 @@ export default function Navbar() {
          sx={{
             bgcolor: "#fff",
             color: "text.primary",
-            boxShadow: "0 2px 8px rgba(0,0,0.15,0.15)",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
          }}
       >
-         <Container maxWidth="xl">
+         <Container maxWidth={false} sx={{ maxWidth: "1600px" }}>
             <Toolbar
                disableGutters
                sx={{
@@ -124,7 +162,6 @@ export default function Navbar() {
                   gap: 2,
                }}
             >
-               {/* Mobile hamburger */}
                {!isLgUp && (
                   <IconButton
                      onClick={toggleDrawer}
@@ -136,7 +173,6 @@ export default function Navbar() {
                   </IconButton>
                )}
 
-               {/* Logo */}
                <Box
                   component={Link}
                   href="/"
@@ -150,7 +186,6 @@ export default function Navbar() {
                   <Image src="/logo.webp" alt="Anycomp" width={180} height={30} priority />
                </Box>
 
-               {/* Desktop links */}
                {isLgUp && (
                   <Stack direction="row" alignItems="center" spacing={0.5} sx={{ ml: 1 }}>
                      {navLinks.map((item) => {
@@ -163,10 +198,8 @@ export default function Navbar() {
                   </Stack>
                )}
 
-               {/* Spacer */}
                <Box sx={{ flex: 1 }} />
 
-               {/* Search (desktop/tablet) */}
                <Box
                   sx={{
                      display: { xs: "none", sm: "flex" },
@@ -191,25 +224,89 @@ export default function Navbar() {
                   </IconButton>
                </Box>
 
-               {/* Right icons */}
-               <Stack direction="row" alignItems="center" spacing={0.5} sx={{ ml: 1 }}>
+               <Stack direction="row" alignItems="center" spacing={0.5}>
                   <Tooltip title="Messages">
-                     <IconButton aria-label="messages" sx={{ color: "text.primary" }}>
-                        <MailOutlineIcon />
+                     <IconButton aria-label="messages" sx={{ color: "text.primary" }} size="small">
+                        <MailOutlineIcon fontSize="small" />
                      </IconButton>
                   </Tooltip>
 
                   <Tooltip title="Notifications">
-                     <IconButton aria-label="notifications" sx={{ color: "text.primary" }}>
+                     <IconButton aria-label="notifications" sx={{ color: "text.primary" }} size="small">
                         <NotificationsNoneIcon />
                      </IconButton>
                   </Tooltip>
 
-                  <Tooltip title="Account">
-                     <IconButton aria-label="account">
-                        <Avatar sx={{ width: 32, height: 32 }} alt="User" src="/avatar.svg" />
-                     </IconButton>
-                  </Tooltip>
+                  {/* ✅ Auth area */}
+                  {!user ? (
+                     <Button
+                        component={Link}
+                        href="/signin"
+                        variant="text"
+                        disableElevation
+                        sx={{
+                           color: "#002F70",
+                        }}
+                     >
+                        Sign in
+                     </Button>
+                  ) : (
+                     <>
+                        <Tooltip title="Account">
+                           <IconButton aria-label="account" onClick={handleAvatarClick} sx={{ ml: 0.5 }} size="small">
+                              <Avatar sx={{ width: 32, height: 32 }} alt={user?.name} src="/avatar.svg" />
+                           </IconButton>
+                        </Tooltip>
+
+                        <Menu
+                           anchorEl={anchorEl}
+                           open={menuOpen}
+                           onClose={handleCloseMenu}
+                           onClick={handleCloseMenu}
+                           transformOrigin={{ horizontal: "right", vertical: "top" }}
+                           anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+                           slotProps={{
+                              paper: {
+                                 sx: {
+                                    mt: 1,
+                                    borderRadius: 2,
+                                    minWidth: 200,
+                                    border: "1px solid",
+                                    borderColor: "divider",
+                                    overflow: "hidden",
+                                 },
+                              },
+                           }}
+                        >
+                           <Box sx={{ px: 2, py: 1.5 }}>
+                              <Typography variant="subtitle2" fontWeight={500}>
+                                 {user?.name}
+                              </Typography>
+                              {(user as UserResponse)?.email ? (
+                                 <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                                    {(user as UserResponse).email}
+                                 </Typography>
+                              ) : null}
+                           </Box>
+
+                           <Divider />
+
+                           <MenuItem onClick={handleGoDashboard}>
+                              <ListItemIcon>
+                                 <DashboardOutlinedIcon fontSize="small" />
+                              </ListItemIcon>
+                              Dashboard
+                           </MenuItem>
+
+                           <MenuItem onClick={handleLogout} disabled={isLoading}>
+                              <ListItemIcon>
+                                 <LogoutOutlinedIcon fontSize="small" />
+                              </ListItemIcon>
+                              Logout
+                           </MenuItem>
+                        </Menu>
+                     </>
+                  )}
                </Stack>
             </Toolbar>
          </Container>

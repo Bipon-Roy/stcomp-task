@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { UserResponse } from "@/types";
+import { ISigninData, UserResponse } from "@/types";
 import apiClient from "@/lib/axios";
 
 interface AuthState {
@@ -7,12 +7,9 @@ interface AuthState {
    isAuthenticated: boolean;
    isLoading: boolean;
    isCheckingAuth: boolean;
-   remainingAttempts: number | null;
-
-   signin: (data: UserResponse) => Promise<void>;
+   signin: (data: ISigninData) => Promise<void>;
    logout: () => Promise<void>;
    currentUser: () => Promise<void>;
-   setInitialUser: (user: UserResponse | null, isAuthenticated: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -20,13 +17,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
    isAuthenticated: false,
    isLoading: false,
    isCheckingAuth: true,
-   remainingAttempts: null,
 
    // Signin function
    signin: async (data) => {
       set({ isLoading: true });
       try {
-         const response = await apiClient.post("/users/signin", data);
+         const response = await apiClient.post("/auth/signin", data);
 
          if (response.data) {
             set({ isAuthenticated: true });
@@ -45,7 +41,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
    logout: async () => {
       set({ isLoading: true });
       try {
-         const res = await apiClient.post("/users/logout");
+         const res = await apiClient.post("/auth/logout");
          if (res.data) {
             set({ user: null, isAuthenticated: false });
          }
@@ -62,7 +58,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
    currentUser: async () => {
       set({ isCheckingAuth: true });
       try {
-         const response = await apiClient.get("/users/current-user");
+         const response = await apiClient.get("/auth/session");
 
          if (response.data) {
             set({ user: response.data.data, isAuthenticated: true });
@@ -76,9 +72,5 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       } finally {
          set({ isCheckingAuth: false });
       }
-   },
-
-   setInitialUser: (user, isAuthenticated) => {
-      set({ user, isAuthenticated, isCheckingAuth: false });
    },
 }));

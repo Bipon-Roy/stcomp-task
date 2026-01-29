@@ -141,8 +141,7 @@ export class AuthService {
     private static setAuthCookies(res: Response, accessToken: string, refreshToken: string): void {
         const cookieOptions: CookieOptions = {
             httpOnly: false,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "none",
+            secure: false,
             maxAge: 1 * 24 * 60 * 60 * 1000,
             path: "/",
         };
