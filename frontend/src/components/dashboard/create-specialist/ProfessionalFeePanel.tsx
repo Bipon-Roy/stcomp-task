@@ -1,7 +1,16 @@
 import * as React from "react";
 import { Card, CardContent, Divider, Stack, Typography, Box } from "@mui/material";
+import { ServiceFormValues } from "@/types";
+interface Props {
+   data: ServiceFormValues;
+}
 
-export default function ProfessionalFeePanel() {
+export default function ProfessionalFeePanel({ data }: Props) {
+   const base = Number.parseFloat(String(data.price ?? "0").replace(/,/g, "")) || 0;
+   const hasPrice = base > 0;
+   // example: 30% processing fee (adjust to your business rule)
+   const processingFee = base * 0.3;
+   const total = base + processingFee;
    return (
       <Card
          variant="outlined"
@@ -30,22 +39,22 @@ export default function ProfessionalFeePanel() {
                      pb: 0.5,
                   }}
                >
-                  RM 1,800
+                  {hasPrice ? <>RM {base.toFixed(2)} </> : " RM 1,800"}
                </Typography>
             </Box>
 
             <Stack spacing={1.4} sx={{ mt: 4 }}>
                <div className="flex items-center justify-between font-medium">
                   <p className="text-[#454545]">Base price</p>
-                  <p className="text-[#222222]">RM 1,800</p>
+                  <p className="text-[#222222]"> {hasPrice ? <>RM {base.toFixed(2)} </> : "RM 1,800"}</p>
                </div>
                <div className="flex items-center justify-between font-medium">
                   <p className="text-[#454545]">Service processing fee</p>
-                  <p className="text-[#222222]">RM 540</p>
+                  <p className="text-[#222222]">{hasPrice ? <>RM {processingFee.toFixed(2)} </> : "RM 540"}</p>
                </div>
                <div className="flex items-center justify-between font-medium">
                   <p className="text-[#454545]">Total</p>
-                  <p className="text-[#222222]">RM 2340</p>
+                  <p className="text-[#222222]">{hasPrice ? <>RM {total.toFixed(2)} </> : "RM 2340"}</p>
                </div>
             </Stack>
 
@@ -53,7 +62,7 @@ export default function ProfessionalFeePanel() {
 
             <div className="flex items-center justify-between font-medium">
                <p className="text-[#454545]">Your returns</p>
-               <p className="text-[#222222]">RM 1,800</p>
+               <p className="text-[#222222]">{hasPrice ? <>RM {base.toFixed(2)} </> : "RM 1,800"}</p>
             </div>
          </CardContent>
       </Card>

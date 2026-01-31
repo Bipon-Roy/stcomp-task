@@ -63,11 +63,8 @@ export default function Navbar() {
    const router = useRouter();
    const [mobileOpen, setMobileOpen] = React.useState(false);
    const toggleDrawer = () => setMobileOpen((p) => !p);
-   const { user, logout, isLoading, currentUser, isCheckingAuth } = useAuthStore();
+   const { user, logout, isLoading, currentUser } = useAuthStore();
 
-   console.log(isCheckingAuth);
-
-   // Avatar menu
    const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
    const menuOpen = Boolean(anchorEl);
 
@@ -82,7 +79,7 @@ export default function Navbar() {
    const handleLogout = async () => {
       handleCloseMenu();
       await logout();
-      router.push("/signin");
+      router.push("/");
    };
 
    React.useEffect(() => {

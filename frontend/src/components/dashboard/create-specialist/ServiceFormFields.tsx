@@ -1,8 +1,20 @@
 "use client";
 
 import * as React from "react";
-import { Autocomplete, Box, Chip, FormControl, MenuItem, Select, Stack, TextField, Typography } from "@mui/material";
-
+import {
+   Autocomplete,
+   Box,
+   Chip,
+   FormControl,
+   IconButton,
+   MenuItem,
+   Select,
+   Stack,
+   TextField,
+   Tooltip,
+   Typography,
+} from "@mui/material";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { ImageUploadField } from "./ImageUploadField";
 import { ServiceFormValues } from "@/types";
 import Image from "next/image";
@@ -74,6 +86,66 @@ export function ServiceFormFields({ value, onChange, additionalOfferingOptions }
                   {[1, 2, 3, 4, 5, 6, 7, 10, 14].map((d) => (
                      <MenuItem key={d} value={d}>
                         {d} {d === 1 ? "day" : "days"}
+                     </MenuItem>
+                  ))}
+               </Select>
+            </FormControl>
+         </Box>
+         {/* Status */}
+         <Box>
+            <Stack
+               direction="row"
+               alignItems="center"
+               spacing={0.5}
+               sx={{
+                  mb: 0.5,
+               }}
+            >
+               <Typography
+                  sx={{
+                     fontSize: 14,
+                     fontWeight: 500,
+                     color: "#222222",
+                  }}
+               >
+                  Approval Status
+               </Typography>
+
+               <Tooltip
+                  title="Simplified for now to meet assessment requirement"
+                  slotProps={{
+                     tooltip: {
+                        sx: {
+                           bgcolor: "#000",
+                           color: "#fff",
+                           fontSize: 12,
+                           fontWeight: 400,
+                           px: 1,
+                           ml: 3,
+                        },
+                     },
+                  }}
+               >
+                  <IconButton
+                     size="small"
+                     sx={{
+                        color: "#888888",
+                        p: 0.25,
+                     }}
+                  >
+                     <InfoOutlinedIcon fontSize="small" />
+                  </IconButton>
+               </Tooltip>
+            </Stack>
+            <FormControl fullWidth size="small">
+               <Select
+                  value={value.status}
+                  onChange={(e) => set("status", e.target.value)}
+                  sx={{ textTransform: "capitalize" }}
+               >
+                  {["pending", "under-review", "approved", "rejected"].map((s) => (
+                     <MenuItem key={s} value={s} sx={{ textTransform: "capitalize" }}>
+                        {s}
                      </MenuItem>
                   ))}
                </Select>

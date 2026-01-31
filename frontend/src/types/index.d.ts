@@ -3,6 +3,7 @@ export type CurrencyCode = "MYR";
 export interface ServiceFormValues {
    title: string;
    description: string;
+   status: string;
    estimatedDays: number;
    currency: CurrencyCode;
    price: string;

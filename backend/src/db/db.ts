@@ -5,7 +5,6 @@ let AppDataSource: DataSource | null = null;
 
 export const connectDB = async () => {
     if (AppDataSource && AppDataSource.isInitialized) {
-        console.log("♻️ Using existing database connection");
         return AppDataSource;
     }
 

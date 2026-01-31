@@ -22,7 +22,6 @@ export class AuthService {
         const userRepo = db.getRepository(User);
 
         const user = await userRepo.findOne({ where: { email } });
-        console.log(user);
 
         if (!user) throw new ApiError(404, "User does not exist");
 

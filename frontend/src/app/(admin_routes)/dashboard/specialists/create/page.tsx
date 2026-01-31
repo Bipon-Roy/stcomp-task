@@ -14,6 +14,7 @@ export default function CreateSpecialistPage() {
    const [displayData, setDisplayData] = useState<ServiceFormValues>({
       title: "",
       description: "",
+      status: "approved",
       estimatedDays: 1,
       currency: "MYR",
       price: "0.00",
@@ -70,12 +71,12 @@ export default function CreateSpecialistPage() {
          </Stack>
          <Grid container spacing={3} alignItems="flex-start">
             <Grid size={{ xs: 12, lg: 8 }}>
-               <ServiceLeftPanel />
+               <ServiceLeftPanel data={displayData} />
             </Grid>
 
             <Grid size={{ xs: 12, lg: 4 }}>
                <Box>
-                  <ProfessionalFeePanel />
+                  <ProfessionalFeePanel data={displayData} />
                </Box>
             </Grid>
          </Grid>

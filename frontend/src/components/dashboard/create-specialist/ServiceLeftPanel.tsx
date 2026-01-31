@@ -1,59 +1,102 @@
 import * as React from "react";
-import { Avatar, Box, Button, Divider, Grid, Paper, Stack, Typography } from "@mui/material";
+import { Avatar, Box, Button, Chip, Divider, Grid, Paper, Stack, Typography } from "@mui/material";
 import CropFreeOutlinedIcon from "@mui/icons-material/CropFreeOutlined";
 import SectionHeader from "./SectionHeader";
 import VerifiedIcon from "@mui/icons-material/Verified";
 import Image from "next/image";
-
-export default function ServiceLeftPanel() {
+import { useObjectUrl } from "@/components/ui/ImagePreviewer";
+import { ServiceFormValues } from "@/types";
+interface Props {
+   data: ServiceFormValues;
+}
+export default function ServiceLeftPanel({ data }: Props) {
+   const img1Url = useObjectUrl((data.images?.[0] as File) ?? null);
+   const img2Url = useObjectUrl((data.images?.[1] as File) ?? null);
+   const img3Url = useObjectUrl((data.images?.[2] as File) ?? null);
    return (
       <Stack spacing={3} sx={{ mb: 2 }}>
          <Grid container spacing={2}>
             {/* Upload placeholder */}
             <Grid size={{ xs: 12, md: 7 }}>
-               <Paper
-                  variant="outlined"
-                  sx={{
-                     height: { xs: 240, md: "100%" },
-                     borderRadius: 0,
-                     borderColor: "#E5E7EB",
-                     bgcolor: "#F3F4F6",
-                     display: "flex",
-                     alignItems: "center",
-                     justifyContent: "center",
-                     p: 3,
-                  }}
-               >
-                  <Stack spacing={1} alignItems="center" sx={{ textAlign: "center" }}>
-                     <Box sx={{ color: "#9CA3AF" }}>
-                        <CropFreeOutlinedIcon sx={{ fontSize: 44 }} />
-                     </Box>
-                     <Typography variant="caption" sx={{ color: "#9CA3AF", maxWidth: 260, lineHeight: 1.4 }}>
-                        Upload an image for your service listing in PNG, JPG or JPEG up to 4MB
-                     </Typography>
-                  </Stack>
-               </Paper>
+               {img1Url ? (
+                  <>
+                     <div className="relative w-full h-full">
+                        {/* ← or h-full, h-screen, aspect-video, etc. */}
+                        <Image src={img1Url} alt="ServiceImage" fill priority className="object-fill" />
+                     </div>
+                  </>
+               ) : (
+                  <Paper
+                     variant="outlined"
+                     sx={{
+                        height: { xs: 240, md: "100%" },
+                        borderRadius: 0,
+                        borderColor: "#E5E7EB",
+                        bgcolor: "#F3F4F6",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        p: 3,
+                     }}
+                  >
+                     <Stack spacing={1} alignItems="center" sx={{ textAlign: "center" }}>
+                        <Box sx={{ color: "#9CA3AF" }}>
+                           <CropFreeOutlinedIcon sx={{ fontSize: 44 }} />
+                        </Box>
+                        <Typography variant="caption" sx={{ color: "#9CA3AF", maxWidth: 260, lineHeight: 1.4 }}>
+                           Upload an image for your service listing in PNG, JPG or JPEG up to 4MB
+                        </Typography>
+                     </Stack>
+                  </Paper>
+               )}
             </Grid>
 
             {/* Banners */}
             <Grid size={{ xs: 12, md: 5 }}>
                <Stack spacing={0.5}>
-                  <Image src="/service1.png" alt="ServiceImage" width={400} height={250} priority />
-                  <Image src="/service2.png" alt="ServiceImage" width={400} height={250} priority />
+                  <Image src={img2Url || "/service1.png"} alt="ServiceImage" width={400} height={250} priority />
+                  <Image src={img3Url || "/service2.png"} alt="ServiceImage" width={400} height={250} priority />
                </Stack>
             </Grid>
          </Grid>
 
          <Box>
-            <SectionHeader title="Description" subtitle="Describe your service here" />
+            <SectionHeader title="Description" subtitle={data.description ?? "Describe your service here"} />
             <Divider sx={{ mt: 2 }} />
          </Box>
 
          <Box>
-            <SectionHeader
-               title="Additional Offerings"
-               subtitle="Enhance your service by adding additional offerings"
-            />
+            {data.additionalOfferings.length ? (
+               <>
+                  <SectionHeader title="Additional Offerings" />
+                  <Stack direction="row" spacing={1} sx={{ mt: 2.5, flexWrap: "wrap", gap: 1.5 }}>
+                     {data.additionalOfferings.map((offering, index) => (
+                        <Chip
+                           key={index}
+                           label={offering}
+                           size="medium"
+                           sx={{
+                              bgcolor: "#F3F4F6",
+                              color: "#374151",
+                              fontWeight: 500,
+                              borderRadius: "16px",
+                              px: 1,
+                              "& .MuiChip-label": {
+                                 px: 1.5,
+                                 py: 0.5,
+                              },
+                           }}
+                        />
+                     ))}
+                  </Stack>
+               </>
+            ) : (
+               <SectionHeader
+                  title="Additional Offerings"
+                  subtitle="Enhance your service by adding additional offerings"
+               />
+            )}
+
             <Divider sx={{ mt: 2 }} />
          </Box>
 

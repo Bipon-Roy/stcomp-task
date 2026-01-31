@@ -56,7 +56,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
    // Get current user function
    currentUser: async () => {
-      set({ isCheckingAuth: true });
       try {
          const response = await apiClient.get("/auth/session");
 
