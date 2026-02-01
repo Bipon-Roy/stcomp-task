@@ -10,6 +10,16 @@ const handleServiceLayerError = (error: unknown): never => {
    throw new Error("An unexpected error occurred.");
 };
 
+//handle post request
+export const handlePost = async (url: string, payload: FieldValues) => {
+   try {
+      const { data } = await apiClient.post(url, payload);
+      return data;
+   } catch (error: unknown) {
+      handleServiceLayerError(error);
+   }
+};
+
 //handle post request with formdata
 export const handlePostFormData = async (url: string, formData: FormData) => {
    try {

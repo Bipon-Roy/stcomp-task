@@ -17,7 +17,7 @@ export const validate = (schema: ZodType<any>) => (req: Request, _res: Response,
             const fieldName = err.path.join(".");
             if (!errorObj[fieldName]) errorObj[fieldName] = err.message;
         });
-
+        console.log(errorObj);
         return next(new ApiError(400, "Validation failed", errorObj));
     }
 

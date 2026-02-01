@@ -3,7 +3,6 @@ import { MediaType, MimeType, VerificationStatus } from "../entities/enums/speci
 import { Media } from "../entities/Media.entity";
 import { Specialist } from "../entities/Specialist.entity";
 import { ApiError } from "../utils/apiError";
-import { cleanupTempDirectory } from "../utils/cleanUpTemp";
 import { uploadOnCloudinary } from "../utils/cloudinary";
 import { compressImage } from "../utils/imageCompressor";
 import { CreateSpecialistBody } from "../validators/specialist.validator";
@@ -53,10 +52,10 @@ export class SpecialistServices {
             const platformFee = "0.00";
             const finalPrice = basePrice;
 
-            // ✅ slug is required and unique
+            // slug is required and unique
             const slug = await buildUniqueSlug(specialistRepo, data.title);
 
-            // ✅ Create Specialist with correct entity fields
+            // Create Specialist with correct entity fields
             const specialist = specialistRepo.create({
                 title: data.title,
                 slug,
@@ -70,37 +69,63 @@ export class SpecialistServices {
                 is_verified: data.status === "approved",
             });
 
-            // ✅ saved is a single Specialist
+            // saved is a single Specialist
             const saved = await specialistRepo.save(specialist);
 
-            // ✅ Create Media rows (FK-only to avoid relation typing issues)
-            const mediaRows: Media[] = [];
+            let mediaRows: Media[];
 
-            for (let i = 0; i < files.length; i++) {
-                const f = files[i];
+            try {
+                mediaRows = await Promise.all(
+                    files.map(async (file, i) => {
+                        const compressedPath = await compressImage(file.path);
+                        const cloudRes = await uploadOnCloudinary(compressedPath);
 
-                const compressed = await compressImage(f.path);
-                const uploaded = await uploadOnCloudinary(compressed);
+                        if (!cloudRes?.secure_url) {
+                            throw new ApiError(400, `Error uploading image ${file.originalname}`);
+                        }
 
-                if (!uploaded) {
-                    throw new ApiError(400, `Error uploading image ${i + 1}`);
-                }
-                const media = mediaRepo.create({
-                    specialists: saved.id,
-                    file_name: uploaded.secure_url,
-                    file_size: f.size,
-                    display_order: i,
-                    mime_type: f.mimetype as MimeType,
-                    media_type: MediaType.IMAGE,
-                    uploaded_at: new Date(),
-                });
-
-                mediaRows.push(media);
+                        return mediaRepo.create({
+                            specialists: saved.id,
+                            file_name: cloudRes.secure_url,
+                            file_size: file.size,
+                            display_order: i,
+                            mime_type: file.mimetype as MimeType,
+                            media_type: MediaType.IMAGE,
+                            uploaded_at: new Date(),
+                        });
+                    })
+                );
+            } catch (error) {
+                throw new ApiError(500, `Image upload failed: ${(error as Error).message}`);
             }
 
             await mediaRepo.save(mediaRows);
 
             return saved.id;
         });
+    }
+
+    static async publishSpecialist(serviceId: string): Promise<string> {
+        const db = await connectDB();
+
+        const specialistRepo = db.getRepository(Specialist);
+
+        const specialist = await specialistRepo.findOne({
+            where: { id: serviceId },
+        });
+
+        if (!specialist) {
+            throw new ApiError(404, "Service not found");
+        }
+
+        if (!specialist.is_draft) {
+            throw new ApiError(400, "Service is already published");
+        }
+
+        specialist.is_draft = false;
+
+        await specialistRepo.save(specialist);
+
+        return specialist.id;
     }
 }

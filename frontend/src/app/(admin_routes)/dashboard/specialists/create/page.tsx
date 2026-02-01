@@ -3,7 +3,8 @@
 import ProfessionalFeePanel from "@/components/dashboard/create-specialist/ProfessionalFeePanel";
 import { ServiceEditDrawer } from "@/components/dashboard/create-specialist/ServiceEditDrawer";
 import ServiceLeftPanel from "@/components/dashboard/create-specialist/ServiceLeftPanel";
-import { usePostWithFormData } from "@/hooks/useMutation";
+import { ServicePublishModal } from "@/components/dashboard/ServicePublishModal";
+import { usePost, usePostWithFormData } from "@/hooks/useMutation";
 import { useServiceForm } from "@/hooks/useServiceForm";
 import { buildServiceFormData } from "@/services/specialistPayload";
 import { serviceOptions } from "@/utils/serviceOffers";
@@ -24,9 +25,48 @@ const initialValues: ServiceFormValues = {
 
 export default function CreateSpecialistPage() {
    const [drawerOpen, setDrawerOpen] = useState(false);
+   const [publishDialogOpen, setPublishDialogOpen] = useState(false);
    const form = useServiceForm(initialValues);
-   const { mutate, isPending } = usePostWithFormData("Create_Specialist", "/specialist/create");
+   const { mutate: createSpecialist, isPending } = usePostWithFormData("Create_Specialist", "/specialist/create");
    const [createdServiceId, setCreatedServiceId] = useState(null);
+
+   const { mutate: publishSpecialist, isPending: isPublishPending } = usePost(
+      "Publish_Specialist",
+      "/specialist/publish"
+   );
+   const handleCreateSpecialist = () => {
+      const r = form.validateAll();
+
+      if (!r.ok) return;
+
+      const payload = buildServiceFormData(form.value);
+      createSpecialist(payload, {
+         onSuccess: (data) => {
+            if (data) setCreatedServiceId(data.data.id);
+            setDrawerOpen(false);
+         },
+      });
+   };
+
+   const handlePublishClick = () => {
+      setPublishDialogOpen(true);
+   };
+   console.log(createdServiceId);
+
+   const handleConfirmPublish = () => {
+      console.log(createdServiceId);
+
+      if (!createdServiceId) return;
+
+      publishSpecialist(
+         { serviceId: createdServiceId },
+         {
+            onSuccess: () => {
+               setPublishDialogOpen(false);
+            },
+         }
+      );
+   };
    return (
       <Box sx={{ mt: 1, p: 2, bgcolor: "#fff" }}>
          <Stack
@@ -57,13 +97,8 @@ export default function CreateSpecialistPage() {
 
                <Button
                   variant="contained"
-                  onClick={() => {
-                     const r = form.validateAll();
-                     if (!r.ok) {
-                        setDrawerOpen(true);
-                        return;
-                     }
-                  }}
+                  disabled={isPending || isPublishPending}
+                  onClick={handlePublishClick}
                   sx={{
                      bgcolor: "#002F70",
                      px: 5,
@@ -99,19 +134,14 @@ export default function CreateSpecialistPage() {
             onTouched={form.onTouched}
             onChange={form.onChange}
             additionalOfferingOptions={serviceOptions}
-            onConfirm={() => {
-               const r = form.validateAll();
+            onConfirm={handleCreateSpecialist}
+         />
 
-               if (!r.ok) return;
-
-               const payload = buildServiceFormData(form.value);
-               mutate(payload, {
-                  onSuccess: (data) => {
-                     console.log(data);
-                     setDrawerOpen(false);
-                  },
-               });
-            }}
+         <ServicePublishModal
+            open={publishDialogOpen}
+            onClose={() => setPublishDialogOpen(false)}
+            onConfirm={handleConfirmPublish}
+            loading={isPublishPending}
          />
       </Box>
    );

@@ -1,6 +1,31 @@
-import { handleDelete, handlePostFormData, handleUpdateFormData } from "@/services/handleMutationServices";
+import { handleDelete, handlePost, handlePostFormData, handleUpdateFormData } from "@/services/handleMutationServices";
 import { showAlert } from "@/utils/showAlert";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { FieldValues } from "react-hook-form";
+
+/**
+ * usePost - A reusable mutation hook for making POST requests.
+ *
+ * @param {string} key - A unique mutation key for React Query's cache.
+ * @param {string} url - The endpoint to which the POST request is made.
+ *
+ * @returns {UseMutationResult} - Returns mutation handlers (mutate, isLoading, etc.)
+ *
+;
+ */
+
+export const usePost = (key: string, url: string) => {
+   return useMutation({
+      mutationKey: [key],
+      mutationFn: async (payload: FieldValues) => await handlePost(url, payload),
+      onSuccess: (data) => {
+         showAlert(data.message || "Successfully saved to database", "success");
+      },
+      onError: (error) => {
+         showAlert(error.message || "Unable to fulfill the request", "error");
+      },
+   });
+};
 
 /**
  * usePostWithFormData - A reusable mutation hook for making POST requests with Formdata.
@@ -22,8 +47,6 @@ export const usePostWithFormData = (key: string, url: string) => {
       },
 
       onError: (error) => {
-         console.log(error);
-
          showAlert(error.message || "Unable to fulfill the request", "error");
       },
    });

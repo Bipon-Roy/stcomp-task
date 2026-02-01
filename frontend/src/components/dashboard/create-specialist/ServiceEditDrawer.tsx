@@ -12,10 +12,10 @@ interface Props {
    onClose: () => void;
    mode: "edit" | "create";
    value: ServiceFormValues;
-   onChange: (next: ServiceFormValues) => void;
    errors?: ServiceFormErrors;
-   onTouched?: (key: string) => void;
    additionalOfferingOptions: string[];
+   onChange: (next: ServiceFormValues) => void;
+   onTouched?: (key: string) => void;
    onConfirm: () => void;
 }
 
