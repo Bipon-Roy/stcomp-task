@@ -25,7 +25,8 @@ const initialValues: ServiceFormValues = {
 export default function CreateSpecialistPage() {
    const [drawerOpen, setDrawerOpen] = useState(false);
    const form = useServiceForm(initialValues);
-   const { mutate, isPending } = usePostWithFormData("CHECK", "/specialist/create");
+   const { mutate, isPending } = usePostWithFormData("Create_Specialist", "/specialist/create");
+   const [createdServiceId, setCreatedServiceId] = useState(null);
    return (
       <Box sx={{ mt: 1, p: 2, bgcolor: "#fff" }}>
          <Stack
@@ -99,15 +100,17 @@ export default function CreateSpecialistPage() {
             onChange={form.onChange}
             additionalOfferingOptions={serviceOptions}
             onConfirm={() => {
-               console.log("Confirm Click");
-
                const r = form.validateAll();
 
                if (!r.ok) return;
 
                const payload = buildServiceFormData(form.value);
-               mutate(payload);
-               setDrawerOpen(false);
+               mutate(payload, {
+                  onSuccess: (data) => {
+                     console.log(data);
+                     setDrawerOpen(false);
+                  },
+               });
             }}
          />
       </Box>

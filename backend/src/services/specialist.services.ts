@@ -85,7 +85,6 @@ export class SpecialistServices {
                 if (!uploaded) {
                     throw new ApiError(400, `Error uploading image ${i + 1}`);
                 }
-
                 const media = mediaRepo.create({
                     specialists: saved.id,
                     file_name: uploaded.secure_url,
