@@ -1,34 +1,34 @@
 "use client";
 
-import * as React from "react";
 import { Box, Button, Drawer, IconButton, Stack, Typography } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { ServiceFormFields } from "./ServiceFormFields";
-import { ServiceFormValues } from "@/types";
+import { ServiceFormValues } from "@/validators/specialist.validator";
+import { ServiceFormErrors } from "@/hooks/useServiceForm";
 
 interface Props {
    open: boolean;
    onClose: () => void;
-   mode?: "create" | "edit";
-   initialValues: ServiceFormValues;
-   onConfirm: (values: ServiceFormValues) => void;
+   mode: "edit" | "create";
+   value: ServiceFormValues;
+   onChange: (next: ServiceFormValues) => void;
+   errors?: ServiceFormErrors;
+   onTouched?: (key: string) => void;
    additionalOfferingOptions: string[];
+   onConfirm: () => void;
 }
 
 export function ServiceEditDrawer({
    open,
    onClose,
    mode = "edit",
-   initialValues,
+   onChange,
+   errors,
+   onTouched,
+   value,
    onConfirm,
    additionalOfferingOptions,
 }: Props) {
-   const [draft, setDraft] = React.useState<ServiceFormValues>(initialValues);
-
-   React.useEffect(() => {
-      if (open) setDraft(initialValues);
-   }, [open, initialValues]);
-
    const title = mode === "create" ? "Create Service" : "Edit Service";
 
    return (
@@ -53,9 +53,11 @@ export function ServiceEditDrawer({
          {/* Body */}
          <Box sx={{ py: 2, px: 3, overflowY: "auto" }}>
             <ServiceFormFields
-               value={draft}
-               onChange={setDraft}
+               value={value}
+               onChange={onChange}
                additionalOfferingOptions={additionalOfferingOptions}
+               errors={errors}
+               onTouched={onTouched}
             />
          </Box>
 
@@ -79,7 +81,7 @@ export function ServiceEditDrawer({
                <Button
                   fullWidth
                   variant="contained"
-                  onClick={() => onConfirm(draft)}
+                  onClick={onConfirm}
                   sx={{
                      textTransform: "none",
                      borderRadius: 1.5,

@@ -1,7 +1,5 @@
-"use client";
-
 import * as React from "react";
-import { Box, Button, IconButton, Paper, Stack, Typography } from "@mui/material";
+import { Box, Button, FormHelperText, IconButton, Paper, Stack, Typography } from "@mui/material";
 import CloudUploadOutlinedIcon from "@mui/icons-material/CloudUploadOutlined";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 
@@ -11,6 +9,8 @@ interface Props {
    onChange: (file: File | null) => void;
    accept?: string;
    maxSizeMb?: number;
+   errorText?: string;
+   onTouched?: () => void;
 }
 
 function formatBytes(bytes: number) {
@@ -31,6 +31,8 @@ export function ImageUploadField({
    onChange,
    accept = "image/png,image/jpeg,image/jpg,image/webp",
    maxSizeMb = 4,
+   errorText,
+   onTouched,
 }: Props) {
    const inputId = React.useId();
    const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
@@ -47,18 +49,15 @@ export function ImageUploadField({
 
    const handlePick = (e: React.ChangeEvent<HTMLInputElement>) => {
       const picked = e.target.files?.[0] ?? null;
+      onTouched?.();
       if (!picked) return;
-
-      const maxBytes = maxSizeMb * 1024 * 1024;
-      if (picked.size > maxBytes) {
-         // basic guard; hook your toast/snackbar if you want
-         onChange(null);
-         e.target.value = "";
-         return;
-      }
-
       onChange(picked);
       e.target.value = "";
+   };
+
+   const handleRemove = () => {
+      onTouched?.();
+      onChange(null);
    };
 
    return (
@@ -71,7 +70,7 @@ export function ImageUploadField({
             sx={{
                borderWidth: "2px",
                borderStyle: "dashed",
-               borderColor: "#000000",
+               borderColor: errorText ? "#d32f2f" : "#000000",
                borderRadius: 1,
                p: 2,
                minHeight: 140,
@@ -104,6 +103,9 @@ export function ImageUploadField({
                <Typography sx={{ fontSize: 12, color: "#888888", fontWeight: 400 }}>Drag a file to upload</Typography>
             </Stack>
          </Paper>
+
+         {!!errorText && <FormHelperText error>{errorText}</FormHelperText>}
+
          <Stack direction="row" justifyContent="space-between" sx={{ width: "100%", mt: 1 }}>
             <Typography sx={{ fontSize: 12, color: "#888888", fontWeight: 400 }}>Accepted: JPG, PNG, WEBP</Typography>
             <Typography sx={{ fontSize: 12, color: "#888888", fontWeight: 400 }}>
@@ -147,15 +149,7 @@ export function ImageUploadField({
                </Box>
 
                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography
-                     sx={{
-                        fontSize: 12,
-                        fontWeight: 600,
-                        color: "#101828",
-                     }}
-                     noWrap
-                     title={file.name}
-                  >
+                  <Typography sx={{ fontSize: 12, fontWeight: 600, color: "#101828" }} noWrap title={file.name}>
                      {file.name}
                   </Typography>
                   <Typography sx={{ fontSize: 11, color: "#888888" }}>
@@ -164,7 +158,7 @@ export function ImageUploadField({
                   </Typography>
                </Box>
 
-               <IconButton size="small" onClick={() => onChange(null)} aria-label="remove file">
+               <IconButton size="small" onClick={handleRemove} aria-label="remove file">
                   <DeleteOutlineIcon fontSize="small" color="warning" />
                </IconButton>
             </Paper>

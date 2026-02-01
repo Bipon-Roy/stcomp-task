@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Red_Hat_Display } from "next/font/google";
 import localFont from "next/font/local";
+import { Providers } from "@/store/Provider";
 
 const redHatDisplay = Red_Hat_Display({
    variable: "--font-red-hat-display",
@@ -54,7 +55,9 @@ export default function RootLayout({
 }>) {
    return (
       <html lang="en">
-         <body className={`${proximaNova.variable} ${redHatDisplay.variable} antialiased`}>{children}</body>
+         <body className={`${proximaNova.variable} ${redHatDisplay.variable} antialiased`}>
+            <Providers>{children}</Providers>
+         </body>
       </html>
    );
 }

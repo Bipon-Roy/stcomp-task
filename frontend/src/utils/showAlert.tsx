@@ -1,22 +1,35 @@
 import { Snackbar, Alert, IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { createRoot, Root } from "react-dom/client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 let root: Root | null = null;
+let hostEl: HTMLDivElement | null = null;
+let counter = 0;
 
 const AlertWrapper = ({
    message,
    severity,
+   onDone,
 }: {
    message: string;
    severity: "success" | "error" | "info" | "warning";
+   onDone: () => void;
 }) => {
    const [open, setOpen] = useState(true);
 
    const handleClose = () => {
       setOpen(false);
    };
+
+   // When snackbar finishes closing, notify util so it can unmount.
+   useEffect(() => {
+      if (!open) {
+         // let the exit animation finish first
+         const t = setTimeout(onDone, 200);
+         return () => clearTimeout(t);
+      }
+   }, [open, onDone]);
 
    return (
       <Snackbar
@@ -30,7 +43,7 @@ const AlertWrapper = ({
             severity={severity}
             onClose={handleClose}
             action={
-               <IconButton size="small" color="inherit" onClick={handleClose}>
+               <IconButton size="small" color="inherit" onClick={() => handleClose()}>
                   <CloseIcon fontSize="small" />
                </IconButton>
             }
@@ -42,11 +55,27 @@ const AlertWrapper = ({
 };
 
 export const showAlert = (message: string, severity: "success" | "error" | "info" | "warning" = "info") => {
+   if (typeof window === "undefined") return;
+
    if (!root) {
-      const div = document.createElement("div");
-      document.body.appendChild(div);
-      root = createRoot(div);
+      hostEl = document.createElement("div");
+      document.body.appendChild(hostEl);
+      root = createRoot(hostEl);
    }
 
-   root.render(<AlertWrapper message={message} severity={severity} />);
+   const id = ++counter;
+
+   const cleanup = () => {
+      // unmount content to remove stale state
+      root?.render(<></>);
+   };
+
+   root.render(
+      <AlertWrapper
+         key={id} // ✅ forces remount every time
+         message={message}
+         severity={severity}
+         onDone={cleanup}
+      />
+   );
 };
