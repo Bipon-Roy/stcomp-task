@@ -92,6 +92,7 @@ export default function CreateSpecialistPage() {
             open={drawerOpen}
             onClose={() => setDrawerOpen(false)}
             mode="edit"
+            isPending={isPending}
             value={form.value}
             errors={form.errors}
             onTouched={form.onTouched}

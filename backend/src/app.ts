@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import authRoutes from "./routes/auth.routes";
+import specialistRoutes from "./routes/specialist.routes";
 import { corsConfig } from "./config/cors";
 import { notFoundHandler } from "./middlewares/notFound.middleware";
 import { errorHandler } from "./middlewares/errorHandler";
@@ -25,6 +26,7 @@ app.get("/", (req, res) => {
     });
 });
 app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/specialist", specialistRoutes);
 
 // Handle 404 errors (non-existent routes)
 app.use(notFoundHandler);

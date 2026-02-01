@@ -13,8 +13,8 @@ export function buildServiceFormData(values: ServiceFormValues) {
    formData.append("additionalOfferings", JSON.stringify(values.additionalOfferings ?? []));
 
    // images: append only if file exists
-   values.images.forEach((file, idx) => {
-      if (file) formData.append(`images[${idx}]`, file);
+   values.images.forEach((file) => {
+      if (file) formData.append("images", file);
    });
 
    return formData;

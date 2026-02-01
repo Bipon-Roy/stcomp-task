@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Button, Drawer, IconButton, Stack, Typography } from "@mui/material";
+import { Box, Button, CircularProgress, Drawer, IconButton, Stack, Typography } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { ServiceFormFields } from "./ServiceFormFields";
 import { ServiceFormValues } from "@/validators/specialist.validator";
@@ -8,6 +8,7 @@ import { ServiceFormErrors } from "@/hooks/useServiceForm";
 
 interface Props {
    open: boolean;
+   isPending: boolean;
    onClose: () => void;
    mode: "edit" | "create";
    value: ServiceFormValues;
@@ -28,6 +29,7 @@ export function ServiceEditDrawer({
    value,
    onConfirm,
    additionalOfferingOptions,
+   isPending,
 }: Props) {
    const title = mode === "create" ? "Create Service" : "Edit Service";
 
@@ -79,6 +81,7 @@ export function ServiceEditDrawer({
                   Cancel
                </Button>
                <Button
+                  disabled={isPending}
                   fullWidth
                   variant="contained"
                   onClick={onConfirm}
@@ -90,7 +93,7 @@ export function ServiceEditDrawer({
                      "&:hover": { bgcolor: "#082657" },
                   }}
                >
-                  Confirm
+                  {isPending ? <CircularProgress size={22} sx={{ color: "white" }} /> : "Confirm"}
                </Button>
             </Stack>
          </Box>
