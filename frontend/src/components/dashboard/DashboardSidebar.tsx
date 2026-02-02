@@ -25,11 +25,12 @@ type DashboardSidebarProps = {
 
 function NavList({ items, onNavigate }: { items: NavItem[]; onNavigate?: () => void }) {
    const pathname = usePathname();
+   console.log(pathname);
 
    return (
       <List disablePadding>
          {items.map((item) => {
-            const active = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
+            const active = pathname === item.href && pathname.startsWith(item.href);
 
             return (
                <Box key={item.key}>

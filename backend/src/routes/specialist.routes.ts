@@ -7,8 +7,10 @@ import { createSpecialistSchema, publishSpecialistSchema } from "../validators/s
 
 const router = Router();
 
-router.route("/create").post(upload.array("images", 3), validate(createSpecialistSchema), createSpecialist);
+router
+    .route("/create")
+    .post(verifyToken, upload.array("images", 3), validate(createSpecialistSchema), createSpecialist);
 
-router.route("/publish").post(validate(publishSpecialistSchema), publishSpecialist);
+router.route("/publish").post(verifyToken, validate(publishSpecialistSchema), publishSpecialist);
 
 export default router;

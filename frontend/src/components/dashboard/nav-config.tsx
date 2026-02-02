@@ -6,7 +6,7 @@ import DrawOutlinedIcon from "@mui/icons-material/DrawOutlined";
 import MailOutlineOutlinedIcon from "@mui/icons-material/MailOutlineOutlined";
 import HelpOutlineOutlinedIcon from "@mui/icons-material/HelpOutlineOutlined";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
-
+import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
 export type NavItem = {
    key: string;
    label: string;
@@ -51,4 +51,5 @@ export const primaryNav: NavItem[] = [
 export const secondaryNav: NavItem[] = [
    { key: "help", label: "Help", href: "/dashboard/help", icon: <HelpOutlineOutlinedIcon fontSize="small" /> },
    { key: "settings", label: "Settings", href: "/dashboard/settings", icon: <SettingsOutlinedIcon fontSize="small" /> },
+   { key: "home", label: "Home", href: "/", icon: <HomeRoundedIcon fontSize="small" /> },
 ];
