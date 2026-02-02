@@ -76,13 +76,15 @@ export default function SpecialistTabs() {
             </Tabs>
          </Box>
          <CustomTabPanel value={value} index={0}>
-            <ServicesTable />
+            <ServicesTable tab="all" />
          </CustomTabPanel>
+
          <CustomTabPanel value={value} index={1}>
-            Item Two
+            <ServicesTable tab="drafts" />
          </CustomTabPanel>
+
          <CustomTabPanel value={value} index={2}>
-            Item Three
+            <ServicesTable tab="published" />
          </CustomTabPanel>
       </Box>
    );

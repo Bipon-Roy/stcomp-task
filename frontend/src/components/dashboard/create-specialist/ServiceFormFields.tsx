@@ -145,7 +145,7 @@ export function ServiceFormFields({ value, onChange, additionalOfferingOptions, 
                   onBlur={() => onTouched?.("status")}
                   sx={{ textTransform: "capitalize" }}
                >
-                  {["pending", "under-review", "approved", "rejected"].map((s) => (
+                  {["under-review", "approved", "rejected"].map((s) => (
                      <MenuItem key={s} value={s} sx={{ textTransform: "capitalize" }}>
                         {s}
                      </MenuItem>

@@ -38,7 +38,7 @@ export type SpecialistListItem = {
     purchases: number;
     durationDays: number;
     approvalStatus: VerificationStatus;
-    publishStatus: "Published" | "Draft";
+    publishStatus: "Published" | "Not Published";
     thumbnailUrl: string | null;
     createdAt: Date;
 };

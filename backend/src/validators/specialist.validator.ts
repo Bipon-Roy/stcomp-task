@@ -31,7 +31,7 @@ export const createSpecialistBodySchema = z.object({
         .min(1, "Description is required")
         .refine((v) => countWords(v) <= DESCRIPTION_MAX_WORDS, `Maximum ${DESCRIPTION_MAX_WORDS} words`),
 
-    status: z.enum(["pending", "under-review", "approved", "rejected"]),
+    status: z.enum(["under-review", "approved", "rejected"]),
     estimatedDays: z.coerce.number().min(1, "Estimated days is required"),
 
     price: z

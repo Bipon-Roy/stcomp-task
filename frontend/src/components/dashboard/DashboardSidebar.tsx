@@ -25,7 +25,6 @@ type DashboardSidebarProps = {
 
 function NavList({ items, onNavigate }: { items: NavItem[]; onNavigate?: () => void }) {
    const pathname = usePathname();
-   console.log(pathname);
 
    return (
       <List disablePadding>

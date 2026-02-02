@@ -47,7 +47,7 @@ export class Specialist {
     @Column({
         type: "enum",
         enum: VerificationStatus,
-        default: VerificationStatus.PENDING,
+        default: VerificationStatus.UNDERREVIEW,
     })
     verification_status!: VerificationStatus;
 

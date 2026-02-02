@@ -122,7 +122,7 @@ export class SpecialistServices {
             purchases: Number(r.purchases ?? 0), // NOTE: replace when you have real purchases table
             durationDays: Number(r.duration_days ?? 0),
             approvalStatus: r.verification_status,
-            publishStatus: r.is_draft ? "Draft" : "Published",
+            publishStatus: r.is_draft ? "Not Published" : "Published",
             thumbnailUrl: r.thumbnail_url ?? null,
             createdAt: new Date(r.created_at),
         }));
@@ -144,15 +144,14 @@ export class SpecialistServices {
             const mediaRepo = manager.getRepository(Media);
 
             const statusMap: Record<CreateSpecialistBody["status"], VerificationStatus> = {
-                pending: VerificationStatus.PENDING,
-                "under-review": VerificationStatus.PENDING,
+                "under-review": VerificationStatus.UNDERREVIEW,
                 approved: VerificationStatus.APPROVED,
                 rejected: VerificationStatus.REJECTED,
             };
 
             const basePrice = data.price;
 
-            const platformFee = "0.00";
+            const platformFee = "0";
             const finalPrice = basePrice;
 
             // slug is required and unique

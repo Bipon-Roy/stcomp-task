@@ -34,7 +34,6 @@ export function useServiceUpsert(opts: { mode: "create" | "edit"; url: string; m
       }
 
       const fd = buildServiceFormData(parsed.data);
-      console.log(parsed.data);
 
       return new Promise<{ ok: boolean; data?: any; errors?: FieldErrors }>((resolve) => {
          const onSuccess = (data: any) => resolve({ ok: true, data });
