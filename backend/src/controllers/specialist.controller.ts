@@ -40,3 +40,14 @@ export const publishSpecialist = asyncHandler(async (req: Request, res: Response
 
     res.status(200).json(new ApiResponse(200, { id }, "Specialist published successfully!"));
 });
+
+export const deleteSpecialist = asyncHandler(async (req: Request, res: Response) => {
+    const { id } = req.params;
+
+    if (!id || Array.isArray(id)) {
+        throw new ApiError(400, "Specialist ID must be a single value");
+    }
+    await SpecialistServices.deleteSpecialist(id);
+
+    res.status(200).json(new ApiResponse(200, null, "Specialist deleted successfully"));
+});

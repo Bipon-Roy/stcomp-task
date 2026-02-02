@@ -4,7 +4,7 @@ import { Media } from "../entities/Media.entity";
 import { Specialist } from "../entities/Specialist.entity";
 import { GetAllSpecialistsParams, SpecialistListItem } from "../types";
 import { ApiError } from "../utils/apiError";
-import { uploadOnCloudinary } from "../utils/cloudinary";
+import { removeImageFromCloud, uploadOnCloudinary } from "../utils/cloudinary";
 import { compressImage } from "../utils/imageCompressor";
 import { applyEnumFilter, applySearch, applySort, buildMeta, normalizePageLimit } from "../utils/queryBuilder";
 import { CreateSpecialistBody } from "../validators/specialist.validator";
@@ -190,6 +190,7 @@ export class SpecialistServices {
                         return mediaRepo.create({
                             specialists: saved.id,
                             file_name: cloudRes.secure_url,
+                            file_id: cloudRes.public_id,
                             file_size: file.size,
                             display_order: i,
                             mime_type: file.mimetype as MimeType,
@@ -230,5 +231,41 @@ export class SpecialistServices {
         await specialistRepo.save(specialist);
 
         return specialist.id;
+    }
+
+    static async deleteSpecialist(serviceId: string): Promise<void> {
+        const db = await connectDB();
+
+        await db.transaction(async (trx) => {
+            const specialistRepo = trx.getRepository(Specialist);
+            const mediaRepo = trx.getRepository(Media);
+
+            const specialist = await specialistRepo.findOne({ where: { id: serviceId } });
+            if (!specialist) {
+                throw new ApiError(404, "Specialist not found");
+            }
+
+            const mediaList = await mediaRepo.find({
+                where: { specialists: serviceId },
+                select: ["id", "file_id"], // change to cloudinary_public_id if needed
+            });
+
+            if (mediaList.length > 0) {
+                const deleteResults = await Promise.allSettled(
+                    mediaList.map((media) => (media.file_id ? removeImageFromCloud(media.file_id) : Promise.resolve()))
+                );
+
+                const failedDeletes = deleteResults.filter((r) => r.status === "rejected");
+                if (failedDeletes.length > 0) {
+                    throw new ApiError(500, "Failed to delete one or more media files. Deletion aborted.");
+                }
+            }
+
+            // 4️⃣ Delete media records
+            await mediaRepo.delete({ specialists: serviceId });
+
+            // 5️⃣ Delete specialist
+            await specialistRepo.delete({ id: serviceId });
+        });
     }
 }

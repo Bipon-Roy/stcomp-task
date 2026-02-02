@@ -36,6 +36,7 @@ import { usePaginatedRequest } from "@/hooks/usePaginatedGetRequest";
 import ServiceStatusChip from "../ui/ServiceStatusChip";
 import { SpecialistItemResponse } from "@/types";
 import { useDebounce } from "@/hooks/useDebounce";
+import ConfirmDeleteDialog from "./ConfirmDeleteServiceDialog";
 
 function RowActions({ onEdit, onDelete }: { onEdit: () => void; onDelete: () => void }) {
    const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -102,6 +103,8 @@ export default function ServicesTable({ tab }: { tab: "all" | "drafts" | "publis
    const theme = useTheme();
    const isMdDown = useMediaQuery(theme.breakpoints.down("md"));
    const [query, setQuery] = React.useState("");
+   const [deleteOpen, setDeleteOpen] = React.useState(false);
+   const [deleteTarget, setDeleteTarget] = React.useState<{ id: string; title: string } | null>(null);
    const debouncedSearchQuery = useDebounce(query, 300);
    const [page, setPage] = React.useState(1);
    const limit = 10;
@@ -111,7 +114,7 @@ export default function ServicesTable({ tab }: { tab: "all" | "drafts" | "publis
    }, [tab, query]);
 
    const { data, isLoading, isError, error } = usePaginatedRequest<SpecialistItemResponse>(
-      "specialists",
+      "All_Specialists_Dashboard",
       "/specialist",
       {
          page,
@@ -123,6 +126,7 @@ export default function ServicesTable({ tab }: { tab: "all" | "drafts" | "publis
    );
 
    const rows = data?.items ?? [];
+   const totalRows = data?.meta?.total ?? 0;
 
    // selection state stays local
    const [selected, setSelected] = React.useState<string[]>([]);
@@ -138,7 +142,15 @@ export default function ServicesTable({ tab }: { tab: "all" | "drafts" | "publis
    const toggleOne = (id: string, checked: boolean) => {
       setSelected((prev) => (checked ? [...prev, id] : prev.filter((x) => x !== id)));
    };
+   const openDelete = (id: string, title: string) => {
+      setDeleteTarget({ id, title });
+      setDeleteOpen(true);
+   };
 
+   const closeDelete = () => {
+      setDeleteOpen(false);
+      setDeleteTarget(null);
+   };
    return (
       <Box sx={{ width: "100%" }}>
          {/* top controls */}
@@ -324,7 +336,7 @@ export default function ServicesTable({ tab }: { tab: "all" | "drafts" | "publis
                               <TableCell align="right">
                                  <RowActions
                                     onEdit={() => console.log("Edit", row.id)}
-                                    onDelete={() => console.log("Delete", row.id)}
+                                    onDelete={() => openDelete(row.id, row.title)}
                                  />
                               </TableCell>
                            </TableRow>
@@ -344,29 +356,37 @@ export default function ServicesTable({ tab }: { tab: "all" | "drafts" | "publis
                </Table>
 
                {/* pagination */}
-               <Box
-                  sx={{
-                     px: 2,
-                     py: 2,
-                     display: "flex",
-                     justifyContent: "center",
-                     borderTop: "1px solid #EEF2F7",
-                  }}
-               >
-                  <Pagination
-                     count={data?.meta?.totalPages ?? 1}
-                     page={page}
-                     onChange={(_, p) => setPage(p)}
+               {totalRows > 10 && (
+                  <Box
                      sx={{
-                        "& .Mui-selected": {
-                           bgcolor: "#002F70 !important",
-                           color: "#fff",
-                        },
+                        px: 2,
+                        py: 2,
+                        display: "flex",
+                        justifyContent: "center",
+                        borderTop: "1px solid #EEF2F7",
                      }}
-                  />
-               </Box>
+                  >
+                     <Pagination
+                        count={data?.meta?.totalPages ?? 1}
+                        page={page}
+                        onChange={(_, p) => setPage(p)}
+                        sx={{
+                           "& .Mui-selected": {
+                              bgcolor: "#002F70 !important",
+                              color: "#fff",
+                           },
+                        }}
+                     />
+                  </Box>
+               )}
             </TableContainer>
          )}
+         <ConfirmDeleteDialog
+            open={deleteOpen}
+            serviceId={deleteTarget?.id ?? null}
+            serviceTitle={deleteTarget?.title}
+            onClose={closeDelete}
+         />
       </Box>
    );
 }

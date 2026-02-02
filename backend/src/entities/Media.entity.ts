@@ -36,6 +36,9 @@ export class Media {
     @Column("int", { default: 0 })
     display_order!: number;
 
+    @Column("varchar", { length: 150 })
+    file_id!: string;
+
     @Column({ type: "enum", enum: MimeType })
     mime_type!: MimeType;
 

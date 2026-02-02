@@ -95,7 +95,7 @@ export function ServiceEditDrawer({
                >
                   {isPending ? (
                      <Stack direction="row" spacing={1} alignItems="center">
-                        <CircularProgress size={20} sx={{ color: "#000" }} />
+                        <CircularProgress size={18} sx={{ color: "#000" }} />
                         <span className="animate-pulse text-black">Please wait…</span>
                      </Stack>
                   ) : (
