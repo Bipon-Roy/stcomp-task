@@ -7,7 +7,7 @@ import { ApiError } from "../utils/apiError";
 import { removeImageFromCloud, uploadOnCloudinary } from "../utils/cloudinary";
 import { compressImage } from "../utils/imageCompressor";
 import { applyEnumFilter, applySearch, applySort, buildMeta, normalizePageLimit } from "../utils/queryBuilder";
-import { CreateSpecialistBody } from "../validators/specialist.validator";
+import { CreateSpecialistBody, UpdateSpecialistBody } from "../validators/specialist.validator";
 
 function slugify(input: string) {
     return input
@@ -133,6 +133,87 @@ export class SpecialistServices {
             meta: buildMeta(page, limit, total),
         };
     }
+    static async getAllSpecialistById(id: string) {
+        const db = await connectDB();
+        const repo = db.getRepository(Specialist);
+
+        // Query specialist with its media
+        const qb = repo
+            .createQueryBuilder("s")
+            .leftJoinAndSelect(
+                Media,
+                "m",
+                `
+            m.specialists = s.id
+            AND m.deleted_at IS NULL
+            AND m.media_type = 'image'
+        `
+            )
+            .where("s.id = :id", { id })
+            .andWhere("s.deleted_at IS NULL");
+
+        const rows = await qb
+            .select([
+                "s.id AS id",
+                "s.title AS title",
+                "s.slug AS slug",
+                "s.description AS description",
+                "s.final_price AS price",
+                "s.duration_days AS duration_days",
+                "s.verification_status AS verification_status",
+                "s.is_draft AS is_draft",
+                "s.created_at AS created_at",
+
+                // media fields
+                "m.id AS media_id",
+                "m.file_name AS file_name",
+                "m.display_order AS display_order",
+            ])
+            .getRawMany<{
+                id: string;
+                title: string;
+                slug: string;
+                description: string;
+                price: string;
+                duration_days: number;
+                verification_status: VerificationStatus;
+                is_draft: boolean;
+                created_at: Date;
+                media_id: string | null;
+                file_name: string | null;
+                display_order: number | null;
+            }>();
+
+        if (!rows.length) {
+            throw new ApiError(404, "Specialist not found");
+        }
+
+        // Build specialist base info from first row
+        const base = rows[0];
+
+        // Collect media
+        const media = rows
+            .filter((r) => r.media_id)
+            .map((r) => ({
+                id: r.media_id!,
+                fileName: r.file_name!,
+                displayOrder: Number(r.display_order ?? 0),
+            }))
+            .sort((a, b) => a.displayOrder - b.displayOrder);
+
+        return {
+            id: base.id,
+            title: base.title,
+            slug: base.slug,
+            description: base.description,
+            price: base.price,
+            durationDays: Number(base.duration_days ?? 0),
+            approvalStatus: base.verification_status,
+            publishStatus: base.is_draft ? "Not Published" : "Published",
+            media,
+        };
+    }
+
     static async createSpecialist(data: CreateSpecialistBody, files: Express.Multer.File[]): Promise<string> {
         if (!files || files.length !== 3) {
             throw new ApiError(400, "Exactly 3 images are required");
@@ -221,7 +302,6 @@ export class SpecialistServices {
         if (!specialist) {
             throw new ApiError(404, "Service not found");
         }
-
         if (!specialist.is_draft) {
             throw new ApiError(400, "Service is already published");
         }
@@ -231,6 +311,168 @@ export class SpecialistServices {
         await specialistRepo.save(specialist);
 
         return specialist.id;
+    }
+
+    static async updateSpecialist(
+        specialistId: string,
+        data: UpdateSpecialistBody,
+        filesByField: Record<string, Express.Multer.File[]>
+    ) {
+        const db = await connectDB();
+
+        const statusMap: Record<UpdateSpecialistBody["status"], VerificationStatus> = {
+            "under-review": VerificationStatus.UNDERREVIEW,
+            approved: VerificationStatus.APPROVED,
+            rejected: VerificationStatus.REJECTED,
+        };
+
+        // identify which image slots were sent
+        const slotDefs = [
+            { key: "image0", order: 0 },
+            { key: "image1", order: 1 },
+            { key: "image2", order: 2 },
+        ] as const;
+
+        const changedSlots = slotDefs
+            .map((s) => ({
+                order: s.order,
+                file: filesByField?.[s.key]?.[0],
+            }))
+            .filter((x) => !!x.file) as { order: 0 | 1 | 2; file: Express.Multer.File }[];
+
+        return await db.transaction(async (manager) => {
+            const specialistRepo = manager.getRepository(Specialist);
+            const mediaRepo = manager.getRepository(Media);
+
+            // Find specialist
+            const specialist = await specialistRepo.findOne({ where: { id: specialistId } });
+            if (!specialist) {
+                throw new ApiError(404, "Specialist not found");
+            }
+
+            // If title changed -> rebuild slug (unique)
+            if (data.title && data.title !== specialist.title) {
+                specialist.title = data.title;
+                specialist.slug = await buildUniqueSlug(specialistRepo, data.title);
+            }
+
+            //  Update only allowed fields
+            specialist.description = data.description;
+            specialist.duration_days = data.estimatedDays;
+
+            // pricing rules (same as create)
+            const basePrice = data.price;
+            specialist.base_price = basePrice;
+            specialist.platform_fee = "0";
+            specialist.final_price = basePrice;
+
+            // status rules
+            specialist.verification_status = statusMap[data.status];
+            specialist.is_verified = data.status === "approved";
+
+            // Todo: additionalOfferings in future
+            // specialist.additional_offerings = data.additionalOfferings;
+
+            //  Save specialist update
+            await specialistRepo.save(specialist);
+
+            //  If no images -> done
+            if (changedSlots.length === 0) {
+                return { id: specialist.id };
+            }
+
+            //  Load existing media (only for this specialist)
+            const existingMedia = await mediaRepo.find({
+                where: { specialists: specialistId },
+                select: ["id", "file_id", "display_order"],
+            });
+
+            const existingByOrder = new Map<number, { id: string; file_id: string | null; display_order: number }>();
+            for (const m of existingMedia) existingByOrder.set(m.display_order, m);
+
+            //  Upload new images FIRST (so we don't delete old until uploads succeed)
+            // Track newly uploaded cloudinary ids for cleanup if something fails later
+            const uploadedNew: {
+                order: number;
+                secure_url: string;
+                public_id: string;
+                size: number;
+                mimetype: string;
+            }[] = [];
+
+            for (const slot of changedSlots) {
+                const compressedPath = await compressImage(slot.file.path);
+                const cloudRes = await uploadOnCloudinary(compressedPath);
+
+                if (!cloudRes?.secure_url || !cloudRes.public_id) {
+                    // cleanup any already uploaded in this request
+                    await Promise.allSettled(uploadedNew.map((image) => removeImageFromCloud(image.public_id)));
+                    throw new ApiError(400, `Error uploading image ${slot.file.originalname}`);
+                }
+
+                uploadedNew.push({
+                    order: slot.order,
+                    secure_url: cloudRes.secure_url,
+                    public_id: cloudRes.public_id,
+                    size: slot.file.size,
+                    mimetype: slot.file.mimetype,
+                });
+            }
+
+            // 8) Delete OLD images from cloudinary only for changed slots
+            // If any delete fails -> abort and also remove newly uploaded images (compensation)
+            const toDeleteFileIds: string[] = [];
+            for (const u of uploadedNew) {
+                const old = existingByOrder.get(u.order);
+                if (old?.file_id) toDeleteFileIds.push(old.file_id);
+            }
+
+            if (toDeleteFileIds.length > 0) {
+                const deleteResults = await Promise.allSettled(toDeleteFileIds.map((fid) => removeImageFromCloud(fid)));
+                const failedDeletes = deleteResults.filter((r) => r.status === "rejected");
+
+                if (failedDeletes.length > 0) {
+                    // cleanup newly uploaded (to avoid orphan files)
+                    await Promise.allSettled(uploadedNew.map((u) => removeImageFromCloud(u.public_id)));
+                    throw new ApiError(500, "Failed to delete one or more old media files. Update aborted.");
+                }
+            }
+
+            //  Update/Create media DB rows for changed slots
+            for (const u of uploadedNew) {
+                const existing = existingByOrder.get(u.order);
+
+                if (existing) {
+                    // update existing row for that slot
+                    await mediaRepo.update(
+                        { id: existing.id },
+                        {
+                            file_name: u.secure_url,
+                            file_id: u.public_id,
+                            file_size: u.size,
+                            mime_type: u.mimetype as MimeType,
+                            media_type: MediaType.IMAGE,
+                            uploaded_at: new Date(),
+                            display_order: u.order,
+                        }
+                    );
+                } else {
+                    const row = mediaRepo.create({
+                        specialists: specialistId,
+                        file_name: u.secure_url,
+                        file_id: u.public_id,
+                        file_size: u.size,
+                        display_order: u.order,
+                        mime_type: u.mimetype as MimeType,
+                        media_type: MediaType.IMAGE,
+                        uploaded_at: new Date(),
+                    });
+                    await mediaRepo.save(row);
+                }
+            }
+
+            return { id: specialist.id };
+        });
     }
 
     static async deleteSpecialist(serviceId: string): Promise<void> {
@@ -247,7 +489,7 @@ export class SpecialistServices {
 
             const mediaList = await mediaRepo.find({
                 where: { specialists: serviceId },
-                select: ["id", "file_id"], // change to cloudinary_public_id if needed
+                select: ["id", "file_id"],
             });
 
             if (mediaList.length > 0) {

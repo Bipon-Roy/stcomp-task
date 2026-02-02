@@ -15,7 +15,6 @@ import {
    Typography,
 } from "@mui/material";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
-
 import { ImageUploadField } from "./ImageUploadField";
 import { ServiceFormValues } from "@/validators/specialist.validator";
 import { ServiceFormErrors } from "@/hooks/useServiceForm";
@@ -187,7 +186,7 @@ export function ServiceFormFields({ value, onChange, additionalOfferingOptions, 
          {/* Additional Offerings */}
          <Box>
             <Typography sx={{ fontSize: 14, fontWeight: 500, color: "#222222", mb: 0.75 }}>
-               Additional Offerings
+               Additional Offerings (Temporary Optional)
             </Typography>
 
             <Autocomplete

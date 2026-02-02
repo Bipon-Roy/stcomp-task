@@ -23,7 +23,7 @@ const multerFileSchema = z
     .refine((f) => f.size <= MAX_IMAGE_BYTES, `Maximum file size: ${MAX_IMAGE_MB}MB`)
     .refine((f) => ACCEPTED_IMAGE_TYPES.includes(f.mimetype), "Accepted: JPG, PNG, WEBP");
 
-export const createSpecialistBodySchema = z.object({
+export const specialistBodySchema = z.object({
     title: z.string().trim().min(1, "Title is required"),
     description: z
         .string()
@@ -54,12 +54,26 @@ export const createSpecialistBodySchema = z.object({
 });
 
 export const createSpecialistSchema = z.object({
-    body: createSpecialistBodySchema,
+    body: specialistBodySchema,
     files: z.array(multerFileSchema).length(3, "Exactly 3 images are required"),
 });
 
-export type CreateSpecialistBody = z.infer<typeof createSpecialistBodySchema>;
+export type CreateSpecialistBody = z.infer<typeof specialistBodySchema>;
 
 export const publishSpecialistSchema = z.object({
     serviceId: z.uuid({ message: "Invalid service id" }),
 });
+
+export const updateSpecialistSchema = z.object({
+    body: specialistBodySchema,
+    files: z
+        .object({
+            image0: z.array(multerFileSchema).max(1).optional(),
+            image1: z.array(multerFileSchema).max(1).optional(),
+            image2: z.array(multerFileSchema).max(1).optional(),
+        })
+        .partial()
+        .optional(),
+});
+
+export type UpdateSpecialistBody = z.infer<typeof specialistBodySchema>;

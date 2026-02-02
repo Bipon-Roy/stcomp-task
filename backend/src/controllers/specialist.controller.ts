@@ -3,6 +3,7 @@ import { asyncHandler } from "../utils/asyncHandler";
 import { ApiResponse } from "../utils/apiResponse";
 import { SpecialistServices } from "../services/specialist.services";
 import { ApiError } from "../utils/apiError";
+import { UpdateSpecialistBody } from "../validators/specialist.validator";
 
 export const getAllSpecialist = asyncHandler(async (req: Request, res: Response) => {
     const page = Number.parseInt(String(req.query.page ?? ""), 10) || 1;
@@ -20,6 +21,14 @@ export const getAllSpecialist = asyncHandler(async (req: Request, res: Response)
     });
     res.status(200).json(new ApiResponse(200, result, "Specialists retrieved successfully"));
 });
+export const getSpecialistById = asyncHandler(async (req: Request, res: Response) => {
+    const id = req.params.id;
+    if (!id || Array.isArray(id)) {
+        throw new ApiError(400, "Specialist Id is required");
+    }
+    const result = await SpecialistServices.getAllSpecialistById(id);
+    res.status(200).json(new ApiResponse(200, result, "Specialist retrieved successfully!"));
+});
 
 export const createSpecialist = asyncHandler(async (req: Request, res: Response) => {
     const body = req.body;
@@ -32,13 +41,25 @@ export const createSpecialist = asyncHandler(async (req: Request, res: Response)
 
 export const publishSpecialist = asyncHandler(async (req: Request, res: Response) => {
     const { serviceId } = req.body;
-
     if (!serviceId) {
-        throw new ApiError(400, "serviceId is required");
+        throw new ApiError(400, "Specialist Id is required");
     }
     const id = await SpecialistServices.publishSpecialist(serviceId);
 
     res.status(200).json(new ApiResponse(200, { id }, "Specialist published successfully!"));
+});
+
+export const updateSpecialist = asyncHandler(async (req: Request, res: Response) => {
+    const id = req.params.id;
+    if (!id || Array.isArray(id)) {
+        throw new ApiError(400, "Specialist Id is required");
+    }
+    const body = req.body as UpdateSpecialistBody;
+    const filesByField = ((req as any).validatedFiles ?? req.files ?? {}) as Record<string, Express.Multer.File[]>;
+
+    const result = await SpecialistServices.updateSpecialist(id, body, filesByField);
+
+    res.status(200).json(new ApiResponse(200, result, "Specialist updated successfully!"));
 });
 
 export const deleteSpecialist = asyncHandler(async (req: Request, res: Response) => {
