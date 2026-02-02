@@ -2,9 +2,11 @@ import { connectDB } from "../db/db";
 import { MediaType, MimeType, VerificationStatus } from "../entities/enums/specialist.enum";
 import { Media } from "../entities/Media.entity";
 import { Specialist } from "../entities/Specialist.entity";
+import { GetAllSpecialistsParams, SpecialistListItem } from "../types";
 import { ApiError } from "../utils/apiError";
 import { uploadOnCloudinary } from "../utils/cloudinary";
 import { compressImage } from "../utils/imageCompressor";
+import { applyEnumFilter, applySearch, applySort, buildMeta, normalizePageLimit } from "../utils/queryBuilder";
 import { CreateSpecialistBody } from "../validators/specialist.validator";
 
 function slugify(input: string) {
@@ -29,6 +31,107 @@ async function buildUniqueSlug(repo: any, title: string) {
 }
 
 export class SpecialistServices {
+    static async getAllSpecialist(params: GetAllSpecialistsParams) {
+        const db = await connectDB();
+        const repo = db.getRepository(Specialist);
+
+        const { page, limit } = normalizePageLimit(params.page ?? 1, params.limit ?? 10);
+
+        // Join only ONE media row (thumbnail) to avoid duplicates
+        const qb = repo
+            .createQueryBuilder("s")
+            .leftJoin(
+                Media,
+                "thumb",
+                `
+          thumb.specialists = s.id
+          AND thumb.deleted_at IS NULL
+          AND thumb.display_order = 0
+          AND thumb.media_type = 'image'
+        `
+            )
+            .where("s.deleted_at IS NULL");
+
+        // tab filter (Drafts / Published)
+        if (params.tab === "drafts") qb.andWhere("s.is_draft = true");
+        if (params.tab === "published") qb.andWhere("s.is_draft = false");
+
+        // search
+        applySearch(qb, {
+            term: params.search,
+            columns: ["s.title", "s.slug"],
+            paramName: "search",
+        });
+
+        // verification status filter (approval status)
+        applyEnumFilter(qb, {
+            value: params.status,
+            column: "s.verification_status",
+            allowed: Object.values(VerificationStatus),
+            paramName: "vstatus",
+        });
+
+        // sorting (whitelisted)
+        applySort(qb, {
+            sortBy: params.sortBy,
+            order: params.order,
+            allowed: {
+                created_at: "s.created_at",
+                price: "s.final_price",
+                duration: "s.duration_days",
+                purchases: "s.total_number_of_ratings", // temp
+            },
+            defaultSort: { column: "s.created_at", order: "DESC" },
+        });
+
+        // count BEFORE pagination
+        const total = await qb.clone().getCount();
+
+        // pagination
+        qb.skip((page - 1) * limit).take(limit);
+
+        // select only what you need for the UI table
+        const rows = await qb
+            .select([
+                "s.id AS id",
+                "s.title AS title",
+                "s.final_price AS price",
+                "s.total_number_of_ratings AS purchases",
+                "s.duration_days AS duration_days",
+                "s.verification_status AS verification_status",
+                "s.is_draft AS is_draft",
+                "s.created_at AS created_at",
+                "thumb.file_name AS thumbnail_url",
+            ])
+            .getRawMany<{
+                id: string;
+                title: string;
+                price: string;
+                purchases: number;
+                duration_days: number;
+                verification_status: VerificationStatus;
+                is_draft: boolean;
+                created_at: Date;
+                thumbnail_url: string | null;
+            }>();
+
+        const items: SpecialistListItem[] = rows.map((r) => ({
+            id: r.id,
+            title: r.title,
+            price: r.price,
+            purchases: Number(r.purchases ?? 0), // NOTE: replace when you have real purchases table
+            durationDays: Number(r.duration_days ?? 0),
+            approvalStatus: r.verification_status,
+            publishStatus: r.is_draft ? "Draft" : "Published",
+            thumbnailUrl: r.thumbnail_url ?? null,
+            createdAt: new Date(r.created_at),
+        }));
+
+        return {
+            items,
+            meta: buildMeta(page, limit, total),
+        };
+    }
     static async createSpecialist(data: CreateSpecialistBody, files: Express.Multer.File[]): Promise<string> {
         if (!files || files.length !== 3) {
             throw new ApiError(400, "Exactly 3 images are required");

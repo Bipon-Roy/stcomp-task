@@ -27,7 +27,7 @@ export default function CreateSpecialistPage() {
    const [drawerOpen, setDrawerOpen] = useState(false);
    const [publishDialogOpen, setPublishDialogOpen] = useState(false);
    const form = useServiceForm(initialValues);
-   const { mutate: createSpecialist, isPending } = usePostWithFormData("Create_Specialist", "/specialist/create");
+   const { mutate: createSpecialist, isPending } = usePostWithFormData("Create_Specialist", "/specialist");
    const [createdServiceId, setCreatedServiceId] = useState(null);
 
    const { mutate: publishSpecialist, isPending: isPublishPending } = usePost(
