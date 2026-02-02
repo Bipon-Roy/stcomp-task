@@ -18,7 +18,7 @@ export const getAllSpecialist = asyncHandler(async (req: Request, res: Response)
         sortBy: (req.query.sortBy as any) || "created_at",
         order: (req.query.order as any) || "DESC",
     });
-    res.status(200).json(new ApiResponse(200, result, "Blogs retrieved successfully"));
+    res.status(200).json(new ApiResponse(200, result, "Specialists retrieved successfully"));
 });
 
 export const createSpecialist = asyncHandler(async (req: Request, res: Response) => {
@@ -26,7 +26,7 @@ export const createSpecialist = asyncHandler(async (req: Request, res: Response)
     const files = ((req as any).validatedFiles ?? req.files ?? []) as Express.Multer.File[];
     const id = await SpecialistServices.createSpecialist(body, files);
     res.status(201).json(
-        new ApiResponse(201, { id }, "Service created successfully! Specialist & Media Tables Updated.")
+        new ApiResponse(201, { id }, "Specialist created successfully! Specialist & Media Tables Updated.")
     );
 });
 
@@ -38,5 +38,5 @@ export const publishSpecialist = asyncHandler(async (req: Request, res: Response
     }
     const id = await SpecialistServices.publishSpecialist(serviceId);
 
-    res.status(200).json(new ApiResponse(200, { id }, "Service published successfully!"));
+    res.status(200).json(new ApiResponse(200, { id }, "Specialist published successfully!"));
 });

@@ -1,7 +1,5 @@
+import { ApprovalStatus, PublishStatus } from "@/types";
 import { Chip } from "@mui/material";
-
-type ApprovalStatus = "approved" | "under-review" | "rejected" | "pending";
-type PublishStatus = "Published" | "Not Published";
 
 export default function ServiceStatusChip({ value }: { value: ApprovalStatus | PublishStatus }) {
    const colors = {

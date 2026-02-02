@@ -34,30 +34,8 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import Link from "next/link";
 import { usePaginatedRequest } from "@/hooks/usePaginatedGetRequest";
 import ServiceStatusChip from "../ui/ServiceStatusChip";
-
-type ApprovalStatus = "approved" | "under-review" | "rejected";
-type PublishStatus = "Published" | "Not Published";
-interface SpecialistListItem {
-   id: string;
-   title: string;
-   price: string;
-   purchases: number;
-   durationDays: number;
-   approvalStatus: ApprovalStatus;
-   publishStatus: PublishStatus;
-}
-
-interface SpecialistItemResponse {
-   items: SpecialistListItem[];
-   meta: {
-      page: number;
-      limit: number;
-      total: number;
-      totalPages: number;
-      hasNext: boolean;
-      hasPrev: boolean;
-   };
-}
+import { SpecialistItemResponse } from "@/types";
+import { useDebounce } from "@/hooks/useDebounce";
 
 function RowActions({ onEdit, onDelete }: { onEdit: () => void; onDelete: () => void }) {
    const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -123,12 +101,11 @@ function RowActions({ onEdit, onDelete }: { onEdit: () => void; onDelete: () => 
 export default function ServicesTable({ tab }: { tab: "all" | "drafts" | "published" }) {
    const theme = useTheme();
    const isMdDown = useMediaQuery(theme.breakpoints.down("md"));
-
    const [query, setQuery] = React.useState("");
+   const debouncedSearchQuery = useDebounce(query, 300);
    const [page, setPage] = React.useState(1);
    const limit = 10;
 
-   // reset page when tab or search changes
    React.useEffect(() => {
       setPage(1);
    }, [tab, query]);
@@ -139,7 +116,7 @@ export default function ServicesTable({ tab }: { tab: "all" | "drafts" | "publis
       {
          page,
          limit,
-         search: query,
+         search: debouncedSearchQuery,
          params: { tab },
          enabled: true,
       }

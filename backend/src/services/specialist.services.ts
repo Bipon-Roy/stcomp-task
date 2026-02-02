@@ -88,7 +88,8 @@ export class SpecialistServices {
         const total = await qb.clone().getCount();
 
         // pagination
-        qb.skip((page - 1) * limit).take(limit);
+        const offset = (page - 1) * limit;
+        qb.offset(offset).limit(limit);
 
         // select only what you need for the UI table
         const rows = await qb
