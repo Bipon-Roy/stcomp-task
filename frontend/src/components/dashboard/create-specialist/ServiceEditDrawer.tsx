@@ -93,7 +93,14 @@ export function ServiceEditDrawer({
                      "&:hover": { bgcolor: "#082657" },
                   }}
                >
-                  {isPending ? <CircularProgress size={22} sx={{ color: "white" }} /> : "Confirm"}
+                  {isPending ? (
+                     <Stack direction="row" spacing={1} alignItems="center">
+                        <CircularProgress size={25} sx={{ color: "#000" }} />
+                        <span className="animate-pulse text-black">Please wait…</span>
+                     </Stack>
+                  ) : (
+                     "Confirm"
+                  )}
                </Button>
             </Stack>
          </Box>

@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Dialog, DialogContent, Stack, Typography, Button, CircularProgress, Box } from "@mui/material";
-import ErrorOutlineRoundedIcon from "@mui/icons-material/ErrorOutlineRounded";
+import InfoSharpIcon from "@mui/icons-material/InfoSharp";
 
 interface Props {
    open: boolean;
@@ -17,6 +17,11 @@ export function ServicePublishModal({ open, onClose, onConfirm, loading = false 
          maxWidth="sm"
          fullWidth
          slotProps={{
+            backdrop: {
+               sx: {
+                  backgroundColor: "rgba(0, 0, 0, 0.8)",
+               },
+            },
             paper: {
                sx: {
                   borderRadius: 2,
@@ -25,18 +30,23 @@ export function ServicePublishModal({ open, onClose, onConfirm, loading = false 
             },
          }}
       >
-         <DialogContent sx={{ p: 3 }}>
-            <Stack direction="row" spacing={1.5} alignItems="start">
+         <DialogContent sx={{ px: 2, py: 3 }}>
+            <Stack direction="row" spacing={1} alignItems="start">
                <Box sx={{ pt: 0.5 }}>
-                  <ErrorOutlineRoundedIcon />
+                  <InfoSharpIcon
+                     sx={{
+                        color: "#071331",
+                        fontSize: 30,
+                     }}
+                  />
                </Box>
 
                <Box sx={{ flex: 1 }}>
-                  <Typography variant="h6" sx={{ fontWeight: 700, color: "#222222" }}>
+                  <Typography variant="h4" sx={{ fontWeight: 600, color: "#222222", fontSize: 30 }}>
                      Publish changes
                   </Typography>
 
-                  <Typography variant="body2" sx={{ color: "text.secondary", mt: 0.5 }}>
+                  <Typography variant="body2" sx={{ color: "#454545", mt: 0.5 }}>
                      Do you want to publish these changes? It will appear in the marketplace listing
                   </Typography>
 
@@ -70,8 +80,8 @@ export function ServicePublishModal({ open, onClose, onConfirm, loading = false 
                      >
                         {loading ? (
                            <Stack direction="row" spacing={1} alignItems="center">
-                              <CircularProgress size={18} sx={{ color: "#fff" }} />
-                              <span>Saving…</span>
+                              <CircularProgress size={18} sx={{ color: "#000" }} />
+                              <span className="animate-pulse text-black">Saving…</span>
                            </Stack>
                         ) : (
                            "Save changes"

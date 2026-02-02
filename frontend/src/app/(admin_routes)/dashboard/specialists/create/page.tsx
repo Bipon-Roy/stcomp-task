@@ -51,11 +51,8 @@ export default function CreateSpecialistPage() {
    const handlePublishClick = () => {
       setPublishDialogOpen(true);
    };
-   console.log(createdServiceId);
 
    const handleConfirmPublish = () => {
-      console.log(createdServiceId);
-
       if (!createdServiceId) return;
 
       publishSpecialist(
