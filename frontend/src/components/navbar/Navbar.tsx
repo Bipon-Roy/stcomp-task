@@ -236,75 +236,62 @@ export default function Navbar() {
                   </Tooltip>
 
                   {/* ✅ Auth area */}
-                  {!user ? (
-                     <Button
-                        component={Link}
-                        href="/signin"
-                        variant="text"
-                        disableElevation
-                        sx={{
-                           color: "#002F70",
+
+                  <>
+                     <Tooltip title="Account">
+                        <IconButton aria-label="account" onClick={handleAvatarClick} sx={{ ml: 0.5 }} size="small">
+                           <Avatar sx={{ width: 32, height: 32 }} alt={user?.name} src="/avatar.svg" />
+                        </IconButton>
+                     </Tooltip>
+
+                     <Menu
+                        anchorEl={anchorEl}
+                        open={menuOpen}
+                        onClose={handleCloseMenu}
+                        onClick={handleCloseMenu}
+                        transformOrigin={{ horizontal: "right", vertical: "top" }}
+                        anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+                        slotProps={{
+                           paper: {
+                              sx: {
+                                 mt: 1,
+                                 borderRadius: 2,
+                                 minWidth: 200,
+                                 border: "1px solid",
+                                 borderColor: "divider",
+                                 overflow: "hidden",
+                              },
+                           },
                         }}
                      >
-                        Sign in
-                     </Button>
-                  ) : (
-                     <>
-                        <Tooltip title="Account">
-                           <IconButton aria-label="account" onClick={handleAvatarClick} sx={{ ml: 0.5 }} size="small">
-                              <Avatar sx={{ width: 32, height: 32 }} alt={user?.name} src="/avatar.svg" />
-                           </IconButton>
-                        </Tooltip>
-
-                        <Menu
-                           anchorEl={anchorEl}
-                           open={menuOpen}
-                           onClose={handleCloseMenu}
-                           onClick={handleCloseMenu}
-                           transformOrigin={{ horizontal: "right", vertical: "top" }}
-                           anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
-                           slotProps={{
-                              paper: {
-                                 sx: {
-                                    mt: 1,
-                                    borderRadius: 2,
-                                    minWidth: 200,
-                                    border: "1px solid",
-                                    borderColor: "divider",
-                                    overflow: "hidden",
-                                 },
-                              },
-                           }}
-                        >
-                           <Box sx={{ px: 2, py: 1.5 }}>
-                              <Typography variant="subtitle2" fontWeight={500}>
-                                 {user?.name}
+                        <Box sx={{ px: 2, py: 1.5 }}>
+                           <Typography variant="subtitle2" fontWeight={500}>
+                              {user?.name}
+                           </Typography>
+                           {(user as UserResponse)?.email ? (
+                              <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                                 {(user as UserResponse).email}
                               </Typography>
-                              {(user as UserResponse)?.email ? (
-                                 <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                                    {(user as UserResponse).email}
-                                 </Typography>
-                              ) : null}
-                           </Box>
+                           ) : null}
+                        </Box>
 
-                           <Divider />
+                        <Divider />
 
-                           <MenuItem onClick={handleGoDashboard}>
-                              <ListItemIcon>
-                                 <DashboardOutlinedIcon fontSize="small" />
-                              </ListItemIcon>
-                              Dashboard
-                           </MenuItem>
+                        <MenuItem onClick={handleGoDashboard}>
+                           <ListItemIcon>
+                              <DashboardOutlinedIcon fontSize="small" />
+                           </ListItemIcon>
+                           Dashboard
+                        </MenuItem>
 
-                           <MenuItem onClick={handleLogout} disabled={isLoading}>
-                              <ListItemIcon>
-                                 <LogoutOutlinedIcon fontSize="small" />
-                              </ListItemIcon>
-                              Logout
-                           </MenuItem>
-                        </Menu>
-                     </>
-                  )}
+                        <MenuItem onClick={handleLogout} disabled={isLoading}>
+                           <ListItemIcon>
+                              <LogoutOutlinedIcon fontSize="small" />
+                           </ListItemIcon>
+                           Logout
+                        </MenuItem>
+                     </Menu>
+                  </>
                </Stack>
             </Toolbar>
          </Container>
