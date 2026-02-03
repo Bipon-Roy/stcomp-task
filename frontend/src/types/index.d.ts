@@ -31,3 +31,20 @@ export interface SpecialistItemResponse {
       hasPrev: boolean;
    };
 }
+
+interface SpecialistMedia {
+   id: string;
+   fileName: string;
+   displayOrder: number;
+}
+
+export interface SpecialistById {
+   id: string;
+   title: string;
+   description: string;
+   price: string;
+   durationDays: number;
+   approvalStatus: ServiceFormValues["status"];
+   additionalOfferings?: string[];
+   media?: SpecialistMedia[];
+}

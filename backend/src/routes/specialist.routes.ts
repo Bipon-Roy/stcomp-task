@@ -26,7 +26,7 @@ router
     .route("/:id")
     .delete(verifyToken, deleteSpecialist)
     .get(verifyToken, getSpecialistById)
-    .patch(
+    .put(
         verifyToken,
         upload.fields([
             { name: "image0", maxCount: 1 },

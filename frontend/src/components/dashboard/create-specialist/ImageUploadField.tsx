@@ -3,16 +3,6 @@ import { Box, Button, FormHelperText, IconButton, Paper, Stack, Typography } fro
 import CloudUploadOutlinedIcon from "@mui/icons-material/CloudUploadOutlined";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 
-interface Props {
-   label: string;
-   file: File | null;
-   onChange: (file: File | null) => void;
-   accept?: string;
-   maxSizeMb?: number;
-   errorText?: string;
-   onTouched?: () => void;
-}
-
 function formatBytes(bytes: number) {
    if (!bytes && bytes !== 0) return "";
    const units = ["B", "KB", "MB", "GB"];
@@ -25,9 +15,30 @@ function formatBytes(bytes: number) {
    return `${n.toFixed(i === 0 ? 0 : 1)} ${units[i]}`;
 }
 
+interface Props {
+   label: string;
+   file: File | null;
+   existingUrl?: string | null; // ✅ new
+   onChange: (file: File | null) => void;
+   accept?: string;
+   maxSizeMb?: number;
+   errorText?: string;
+   onTouched?: () => void;
+}
+
+function getFileNameFromUrl(url: string) {
+   try {
+      const p = new URL(url).pathname;
+      return decodeURIComponent(p.split("/").pop() || "image");
+   } catch {
+      return "image";
+   }
+}
+
 export function ImageUploadField({
    label,
    file,
+   existingUrl = null,
    onChange,
    accept = "image/png,image/jpeg,image/jpg,image/webp",
    maxSizeMb = 4,
@@ -47,6 +58,8 @@ export function ImageUploadField({
       return () => URL.revokeObjectURL(url);
    }, [file]);
 
+   const effectivePreview = previewUrl || existingUrl;
+
    const handlePick = (e: React.ChangeEvent<HTMLInputElement>) => {
       const picked = e.target.files?.[0] ?? null;
       onTouched?.();
@@ -64,7 +77,6 @@ export function ImageUploadField({
       <Stack spacing={1.25}>
          <Typography sx={{ fontSize: 14, fontWeight: 500, color: "#222222" }}>{label}</Typography>
 
-         {/* Dropzone-like box */}
          <Paper
             variant="outlined"
             sx={{
@@ -112,8 +124,8 @@ export function ImageUploadField({
                Maximum file size: {maxSizeMb}MB
             </Typography>
          </Stack>
-         {/* File card */}
-         {file && (
+
+         {(file || existingUrl) && (
             <Paper
                variant="outlined"
                sx={{
@@ -138,23 +150,31 @@ export function ImageUploadField({
                      flexShrink: 0,
                   }}
                >
-                  {previewUrl ? (
+                  {effectivePreview ? (
                      // eslint-disable-next-line @next/next/no-img-element
                      <img
-                        src={previewUrl}
-                        alt={file.name}
+                        src={effectivePreview}
+                        alt={file?.name || "existing image"}
                         style={{ width: "100%", height: "100%", objectFit: "cover" }}
                      />
                   ) : null}
                </Box>
 
                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography sx={{ fontSize: 12, fontWeight: 600, color: "#101828" }} noWrap title={file.name}>
-                     {file.name}
+                  <Typography
+                     sx={{ fontSize: 12, fontWeight: 600, color: "#101828" }}
+                     noWrap
+                     title={file?.name || (existingUrl ? getFileNameFromUrl(existingUrl) : "")}
+                  >
+                     {file?.name || (existingUrl ? getFileNameFromUrl(existingUrl) : "")}
                   </Typography>
+
                   <Typography sx={{ fontSize: 11, color: "#888888" }}>
-                     Size: {formatBytes(file.size)} • Type:{" "}
-                     {(file.type || "").toUpperCase().replace("IMAGE/", "") || "—"}
+                     {file
+                        ? `Size: ${formatBytes(file.size)} • Type: ${
+                             (file.type || "").toUpperCase().replace("IMAGE/", "") || "—"
+                          }`
+                        : "Existing image"}
                   </Typography>
                </Box>
 

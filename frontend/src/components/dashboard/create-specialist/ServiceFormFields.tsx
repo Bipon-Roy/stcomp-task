@@ -25,6 +25,7 @@ interface Props {
    additionalOfferingOptions: string[];
    errors?: ServiceFormErrors;
    onTouched?: (key: string) => void;
+   existingImageUrls?: (string | null)[]; // ✅ add
 }
 
 const DESCRIPTION_MAX_WORDS = 500;
@@ -35,7 +36,14 @@ function countWords(s: string) {
    return trimmed.split(/\s+/).length;
 }
 
-export function ServiceFormFields({ value, onChange, additionalOfferingOptions, errors = {}, onTouched }: Props) {
+export function ServiceFormFields({
+   value,
+   onChange,
+   additionalOfferingOptions,
+   errors = {},
+   onTouched,
+   existingImageUrls = [null, null, null],
+}: Props) {
    const words = countWords(value.description);
 
    const set = <K extends keyof ServiceFormValues>(key: K, v: ServiceFormValues[K]) => {
@@ -229,6 +237,7 @@ export function ServiceFormFields({ value, onChange, additionalOfferingOptions, 
             onChange={(f) => setImageAt(0, f)}
             errorText={err("images.0")}
             onTouched={() => onTouched?.("images.0")}
+            existingUrl={existingImageUrls?.[0] ?? null}
          />
          <ImageUploadField
             label="Service - Image (2nd)"
@@ -236,6 +245,7 @@ export function ServiceFormFields({ value, onChange, additionalOfferingOptions, 
             onChange={(f) => setImageAt(1, f)}
             errorText={err("images.1")}
             onTouched={() => onTouched?.("images.1")}
+            existingUrl={existingImageUrls?.[0] ?? null}
          />
          <ImageUploadField
             label="Service - Image (3rd)"
@@ -243,6 +253,7 @@ export function ServiceFormFields({ value, onChange, additionalOfferingOptions, 
             onChange={(f) => setImageAt(2, f)}
             errorText={err("images.2")}
             onTouched={() => onTouched?.("images.2")}
+            existingUrl={existingImageUrls?.[0] ?? null}
          />
       </Stack>
    );

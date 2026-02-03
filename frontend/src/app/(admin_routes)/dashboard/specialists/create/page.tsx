@@ -124,7 +124,7 @@ export default function CreateSpecialistPage() {
          <ServiceEditDrawer
             open={drawerOpen}
             onClose={() => setDrawerOpen(false)}
-            mode="edit"
+            mode="create"
             isPending={isPending}
             value={form.value}
             errors={form.errors}

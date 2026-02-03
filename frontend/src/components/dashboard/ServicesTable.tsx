@@ -37,6 +37,23 @@ import ServiceStatusChip from "../ui/ServiceStatusChip";
 import { SpecialistItemResponse } from "@/types";
 import { useDebounce } from "@/hooks/useDebounce";
 import ConfirmDeleteDialog from "./ConfirmDeleteServiceDialog";
+import { ServiceEditDrawer } from "./create-specialist/ServiceEditDrawer";
+import { serviceOptions } from "@/utils/serviceOffers";
+import { useServiceForm } from "@/hooks/useServiceForm";
+import { ServiceFormValues } from "@/validators/specialist.validator";
+import { useUpdateWithFormData } from "@/hooks/useMutation";
+import { buildServiceFormData } from "@/services/specialistPayload";
+import { useQueryClient } from "@tanstack/react-query";
+
+const initialValues: ServiceFormValues = {
+   title: "",
+   description: "",
+   status: "approved",
+   estimatedDays: 1,
+   price: "",
+   additionalOfferings: [],
+   images: [null, null, null],
+};
 
 function RowActions({ onEdit, onDelete }: { onEdit: () => void; onDelete: () => void }) {
    const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -107,12 +124,11 @@ export default function ServicesTable({ tab }: { tab: "all" | "drafts" | "publis
    const [deleteTarget, setDeleteTarget] = React.useState<{ id: string; title: string } | null>(null);
    const debouncedSearchQuery = useDebounce(query, 300);
    const [page, setPage] = React.useState(1);
+   const [drawerOpen, setDrawerOpen] = React.useState(false);
+   const [editId, setEditId] = React.useState<string>("");
+   const form = useServiceForm(initialValues);
    const limit = 10;
-
-   React.useEffect(() => {
-      setPage(1);
-   }, [tab, query]);
-
+   const queryClient = useQueryClient();
    const { data, isLoading, isError, error } = usePaginatedRequest<SpecialistItemResponse>(
       "All_Specialists_Dashboard",
       "/specialist",
@@ -124,6 +140,35 @@ export default function ServicesTable({ tab }: { tab: "all" | "drafts" | "publis
          enabled: true,
       }
    );
+   const { mutate: updateSpecialist, isPending } = useUpdateWithFormData("Update_Specialist", `/specialist/${editId}`);
+
+   const closeEdit = () => {
+      setDrawerOpen(false);
+      setEditId("");
+   };
+
+   const openEdit = (id: string) => {
+      setEditId(id);
+      setDrawerOpen(true);
+   };
+
+   const handleUpdateSpecialist = () => {
+      const r = form.validateAll();
+
+      if (!r.ok) return;
+
+      const payload = buildServiceFormData(form.value);
+      updateSpecialist(payload, {
+         onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["All_Specialists_Dashboard"] });
+            queryClient.invalidateQueries({ queryKey: ["Specialist_By_Id"] });
+         },
+      });
+   };
+
+   React.useEffect(() => {
+      setPage(1);
+   }, [tab, query]);
 
    const rows = data?.items ?? [];
    const totalRows = data?.meta?.total ?? 0;
@@ -335,7 +380,7 @@ export default function ServicesTable({ tab }: { tab: "all" | "drafts" | "publis
 
                               <TableCell align="right">
                                  <RowActions
-                                    onEdit={() => console.log("Edit", row.id)}
+                                    onEdit={() => openEdit(row.id)}
                                     onDelete={() => openDelete(row.id, row.title)}
                                  />
                               </TableCell>
@@ -381,6 +426,19 @@ export default function ServicesTable({ tab }: { tab: "all" | "drafts" | "publis
                )}
             </TableContainer>
          )}
+         <ServiceEditDrawer
+            serviceId={editId}
+            open={drawerOpen}
+            onClose={closeEdit}
+            mode="edit"
+            isPending={isPending}
+            value={form.value}
+            errors={form.errors}
+            onTouched={form.onTouched}
+            onChange={form.onChange}
+            additionalOfferingOptions={serviceOptions}
+            onConfirm={handleUpdateSpecialist}
+         />
          <ConfirmDeleteDialog
             open={deleteOpen}
             serviceId={deleteTarget?.id ?? null}

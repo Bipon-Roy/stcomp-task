@@ -5,10 +5,14 @@ import CloseIcon from "@mui/icons-material/Close";
 import { ServiceFormFields } from "./ServiceFormFields";
 import { ServiceFormValues } from "@/validators/specialist.validator";
 import { ServiceFormErrors } from "@/hooks/useServiceForm";
+import { useEffect, useState } from "react";
+import { useGetRequest } from "@/hooks/useGetRequest";
+import { SpecialistById } from "@/types";
 
 interface Props {
    open: boolean;
    isPending: boolean;
+   serviceId?: string;
    onClose: () => void;
    mode: "edit" | "create";
    value: ServiceFormValues;
@@ -19,18 +23,61 @@ interface Props {
    onConfirm: () => void;
 }
 
+function mapApiToFormValues(d: SpecialistById): ServiceFormValues {
+   return {
+      title: d?.title ?? "",
+      description: d?.description ?? "",
+      status: d?.approvalStatus ?? "approved",
+      estimatedDays: Number(d?.durationDays ?? 1),
+      additionalOfferings: d?.additionalOfferings ?? [],
+      price: d?.price ?? "",
+      images: [null, null, null],
+   };
+}
+function mapApiToExistingUrls(d: SpecialistById): (string | null)[] {
+   const urls: (string | null)[] = [null, null, null];
+
+   for (const m of d?.media ?? []) {
+      const idx = Number(m.displayOrder);
+      if (idx >= 0 && idx < 3) {
+         urls[idx] = m.fileName;
+      }
+   }
+
+   return urls;
+}
+
 export function ServiceEditDrawer({
    open,
    onClose,
-   mode = "edit",
-   onChange,
-   errors,
-   onTouched,
-   value,
    onConfirm,
+   mode = "edit",
+   serviceId = "",
+   value,
+   errors,
+   onChange,
+   onTouched,
    additionalOfferingOptions,
    isPending,
 }: Props) {
+   const enabled = open && Boolean(serviceId) && mode === "edit";
+
+   const { data, isFetching } = useGetRequest(
+      ["Specialist_By_Id", serviceId],
+      `/specialist/${serviceId}`,
+      undefined,
+      enabled
+   );
+
+   const [existingImageUrls, setExistingImageUrls] = useState<(string | null)[]>([null, null, null]);
+
+   useEffect(() => {
+      if (!enabled) return;
+      if (!data) return;
+      onChange(mapApiToFormValues(data));
+      setExistingImageUrls(mapApiToExistingUrls(data));
+   }, [data, enabled, onChange]);
+
    const title = mode === "create" ? "Create Service" : "Edit Service";
 
    return (
@@ -53,18 +100,26 @@ export function ServiceEditDrawer({
          </Box>
 
          {/* Body */}
-         <Box sx={{ py: 2, px: 3, overflowY: "auto" }}>
-            <ServiceFormFields
-               value={value}
-               onChange={onChange}
-               additionalOfferingOptions={additionalOfferingOptions}
-               errors={errors}
-               onTouched={onTouched}
-            />
+         <Box sx={{ py: 2, px: 3, overflowY: "auto", flex: 1 }}>
+            {isFetching ? (
+               <Stack spacing={2} alignItems="center" sx={{ mt: 4 }}>
+                  <CircularProgress size={28} />
+                  <Typography color="text.secondary">Loading service details…</Typography>
+               </Stack>
+            ) : (
+               <ServiceFormFields
+                  value={value}
+                  onChange={onChange}
+                  additionalOfferingOptions={additionalOfferingOptions}
+                  errors={errors}
+                  onTouched={onTouched}
+                  existingImageUrls={existingImageUrls}
+               />
+            )}
          </Box>
 
          {/* Footer */}
-         <Box sx={{ py: 2, px: 3, mt: "auto" }}>
+         <Box sx={{ py: 2, px: 3 }}>
             <Stack direction="row" spacing={1.25}>
                <Button
                   fullWidth
@@ -80,8 +135,9 @@ export function ServiceEditDrawer({
                >
                   Cancel
                </Button>
+
                <Button
-                  disabled={isPending}
+                  disabled={isPending || isFetching}
                   fullWidth
                   variant="contained"
                   onClick={onConfirm}
@@ -95,8 +151,8 @@ export function ServiceEditDrawer({
                >
                   {isPending ? (
                      <Stack direction="row" spacing={1} alignItems="center">
-                        <CircularProgress size={18} sx={{ color: "#000" }} />
-                        <span className="animate-pulse text-black">Please wait…</span>
+                        <CircularProgress size={18} sx={{ color: "#fff" }} />
+                        <span className="animate-pulse text-white">Please wait…</span>
                      </Stack>
                   ) : (
                      "Confirm"
