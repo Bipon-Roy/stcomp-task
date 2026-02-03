@@ -67,14 +67,12 @@ export const clearSession = (res: Response) => {
     res.clearCookie("accessToken", {
         httpOnly: true,
         secure: isProd,
-        sameSite: isProd ? "none" : "lax",
         maxAge: 2 * 24 * 60 * 60 * 1000,
         path: "/",
     });
     res.clearCookie("refreshToken", {
         httpOnly: true,
         secure: isProd,
-        sameSite: isProd ? "none" : "lax",
         maxAge: 2 * 24 * 60 * 60 * 1000,
         path: "/",
     });

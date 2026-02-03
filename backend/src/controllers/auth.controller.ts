@@ -14,7 +14,6 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
     const options: CookieOptions = {
         httpOnly: true,
         secure: isProd,
-        sameSite: isProd ? "none" : "lax",
         maxAge: 2 * 24 * 60 * 60 * 1000,
         path: "/",
     };
