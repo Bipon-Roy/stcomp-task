@@ -354,7 +354,7 @@ export default function ServicesTable({ tab }: { tab: "all" | "drafts" | "publis
 
                               <TableCell>
                                  <Typography fontWeight={500} color="#454545">
-                                    {row.price}
+                                    RM {row.price}
                                  </Typography>
                               </TableCell>
 

@@ -137,10 +137,9 @@ export class SpecialistServices {
         const db = await connectDB();
         const repo = db.getRepository(Specialist);
 
-        // Query specialist with its media
-        const qb = repo
+        const rows = await repo
             .createQueryBuilder("s")
-            .leftJoinAndSelect(
+            .leftJoin(
                 Media,
                 "m",
                 `
@@ -150,67 +149,64 @@ export class SpecialistServices {
         `
             )
             .where("s.id = :id", { id })
-            .andWhere("s.deleted_at IS NULL");
-
-        const rows = await qb
+            .andWhere("s.deleted_at IS NULL")
             .select([
-                "s.id AS id",
-                "s.title AS title",
-                "s.slug AS slug",
-                "s.description AS description",
-                "s.final_price AS price",
-                "s.duration_days AS duration_days",
-                "s.verification_status AS verification_status",
-                "s.is_draft AS is_draft",
-                "s.created_at AS created_at",
+                "s.id AS s_id",
+                "s.title AS s_title",
+                "s.slug AS s_slug",
+                "s.description AS s_description",
+                "s.final_price AS s_price",
+                "s.duration_days AS s_duration_days",
+                "s.verification_status AS s_verification_status",
+                "s.is_draft AS s_is_draft",
+                "s.created_at AS s_created_at",
 
-                // media fields
-                "m.id AS media_id",
-                "m.file_name AS file_name",
-                "m.display_order AS display_order",
+                "m.id AS m_id",
+                "m.file_name AS m_file_name",
+                "m.display_order AS m_display_order",
             ])
             .getRawMany<{
-                id: string;
-                title: string;
-                slug: string;
-                description: string;
-                price: string;
-                duration_days: number;
-                verification_status: VerificationStatus;
-                is_draft: boolean;
-                created_at: Date;
-                media_id: string | null;
-                file_name: string | null;
-                display_order: number | null;
+                s_id: string;
+                s_title: string;
+                s_slug: string;
+                s_description: string | null;
+                s_price: string;
+                s_duration_days: number;
+                s_verification_status: VerificationStatus;
+                s_is_draft: boolean;
+                s_created_at: Date;
+
+                m_id: string | null;
+                m_file_name: string | null;
+                m_display_order: number | null;
             }>();
 
         if (!rows.length) {
             throw new ApiError(404, "Specialist not found");
         }
 
-        // Build specialist base info from first row
         const base = rows[0];
 
-        // Collect media
         const media = rows
-            .filter((r) => r.media_id)
+            .filter((r) => r.m_id)
             .map((r) => ({
-                id: r.media_id!,
-                fileName: r.file_name!,
-                displayOrder: Number(r.display_order ?? 0),
+                id: r.m_id!,
+                fileName: r.m_file_name!,
+                displayOrder: Number(r.m_display_order ?? 0),
             }))
             .sort((a, b) => a.displayOrder - b.displayOrder);
 
         return {
-            id: base.id,
-            title: base.title,
-            slug: base.slug,
-            description: base.description,
-            price: base.price,
-            durationDays: Number(base.duration_days ?? 0),
-            approvalStatus: base.verification_status,
-            publishStatus: base.is_draft ? "Not Published" : "Published",
-            media,
+            id: base.s_id,
+            title: base.s_title,
+            slug: base.s_slug,
+            description: base.s_description,
+            price: base.s_price,
+            durationDays: Number(base.s_duration_days ?? 0),
+            approvalStatus: base.s_verification_status,
+            publishStatus: base.s_is_draft ? "Not Published" : "Published",
+            createdAt: new Date(base.s_created_at),
+            media: media.map((m) => m.fileName),
         };
     }
 

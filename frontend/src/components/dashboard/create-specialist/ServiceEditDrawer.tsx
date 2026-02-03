@@ -5,7 +5,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import { ServiceFormFields } from "./ServiceFormFields";
 import { ServiceFormValues } from "@/validators/specialist.validator";
 import { ServiceFormErrors } from "@/hooks/useServiceForm";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useGetRequest } from "@/hooks/useGetRequest";
 import { SpecialistById } from "@/types";
 
@@ -34,18 +34,6 @@ function mapApiToFormValues(d: SpecialistById): ServiceFormValues {
       images: [null, null, null],
    };
 }
-function mapApiToExistingUrls(d: SpecialistById): (string | null)[] {
-   const urls: (string | null)[] = [null, null, null];
-
-   for (const m of d?.media ?? []) {
-      const idx = Number(m.displayOrder);
-      if (idx >= 0 && idx < 3) {
-         urls[idx] = m.fileName;
-      }
-   }
-
-   return urls;
-}
 
 export function ServiceEditDrawer({
    open,
@@ -69,13 +57,10 @@ export function ServiceEditDrawer({
       enabled
    );
 
-   const [existingImageUrls, setExistingImageUrls] = useState<(string | null)[]>([null, null, null]);
-
    useEffect(() => {
       if (!enabled) return;
       if (!data) return;
       onChange(mapApiToFormValues(data));
-      setExistingImageUrls(mapApiToExistingUrls(data));
    }, [data, enabled, onChange]);
 
    const title = mode === "create" ? "Create Service" : "Edit Service";
@@ -113,7 +98,7 @@ export function ServiceEditDrawer({
                   additionalOfferingOptions={additionalOfferingOptions}
                   errors={errors}
                   onTouched={onTouched}
-                  existingImageUrls={existingImageUrls}
+                  existingImageUrls={data?.media}
                />
             )}
          </Box>

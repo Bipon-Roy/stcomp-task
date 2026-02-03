@@ -32,12 +32,6 @@ export interface SpecialistItemResponse {
    };
 }
 
-interface SpecialistMedia {
-   id: string;
-   fileName: string;
-   displayOrder: number;
-}
-
 export interface SpecialistById {
    id: string;
    title: string;
@@ -46,5 +40,5 @@ export interface SpecialistById {
    durationDays: number;
    approvalStatus: ServiceFormValues["status"];
    additionalOfferings?: string[];
-   media?: SpecialistMedia[];
+   media?: string[];
 }

@@ -245,7 +245,7 @@ export function ServiceFormFields({
             onChange={(f) => setImageAt(1, f)}
             errorText={err("images.1")}
             onTouched={() => onTouched?.("images.1")}
-            existingUrl={existingImageUrls?.[0] ?? null}
+            existingUrl={existingImageUrls?.[1] ?? null}
          />
          <ImageUploadField
             label="Service - Image (3rd)"
@@ -253,7 +253,7 @@ export function ServiceFormFields({
             onChange={(f) => setImageAt(2, f)}
             errorText={err("images.2")}
             onTouched={() => onTouched?.("images.2")}
-            existingUrl={existingImageUrls?.[0] ?? null}
+            existingUrl={existingImageUrls?.[2] ?? null}
          />
       </Stack>
    );

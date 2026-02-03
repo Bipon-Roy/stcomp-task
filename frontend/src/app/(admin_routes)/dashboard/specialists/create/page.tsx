@@ -11,6 +11,7 @@ import { serviceOptions } from "@/utils/serviceOffers";
 import { ServiceFormValues } from "@/validators/specialist.validator";
 import { Stack, Typography, Button, Grid } from "@mui/material";
 import { Box } from "@mui/material";
+import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
 const initialValues: ServiceFormValues = {
@@ -29,7 +30,7 @@ export default function CreateSpecialistPage() {
    const form = useServiceForm(initialValues);
    const { mutate: createSpecialist, isPending } = usePostWithFormData("Create_Specialist", "/specialist");
    const [createdServiceId, setCreatedServiceId] = useState(null);
-
+   const queryClient = useQueryClient();
    const { mutate: publishSpecialist, isPending: isPublishPending } = usePost(
       "Publish_Specialist",
       "/specialist/publish"
@@ -43,6 +44,7 @@ export default function CreateSpecialistPage() {
       createSpecialist(payload, {
          onSuccess: (data) => {
             if (data) setCreatedServiceId(data.data.id);
+            queryClient.invalidateQueries({ queryKey: ["All_Specialists_Dashboard"] });
             setDrawerOpen(false);
          },
       });
