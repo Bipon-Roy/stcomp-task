@@ -16,18 +16,30 @@ import {
 } from "@mui/material";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { ImageUploadField } from "./ImageUploadField";
-import { ServiceFormValues } from "@/validators/specialist.validator";
+import { type CreateSpecialistFormValues, type UpdateSpecialistFormValues } from "@/validators/specialist.validator";
 import { ServiceFormErrors } from "@/hooks/useServiceForm";
 
-interface Props {
-   value: ServiceFormValues;
-   onChange: (next: ServiceFormValues) => void;
-   additionalOfferingOptions: string[];
-   errors?: ServiceFormErrors;
-   onTouched?: (key: string) => void;
-   existingImageUrls?: (string | null)[]; // ✅ add
-}
+type Mode = "create" | "edit";
 
+type Props =
+   | {
+        mode: "create";
+        value: CreateSpecialistFormValues;
+        onChange: (next: CreateSpecialistFormValues) => void;
+        additionalOfferingOptions: string[];
+        errors?: ServiceFormErrors;
+        onTouched?: (key: string) => void;
+        existingImageUrls?: (string | null)[];
+     }
+   | {
+        mode: "edit";
+        value: UpdateSpecialistFormValues;
+        onChange: (next: UpdateSpecialistFormValues) => void;
+        additionalOfferingOptions: string[];
+        errors?: ServiceFormErrors;
+        onTouched?: (key: string) => void;
+        existingImageUrls?: (string | null)[];
+     };
 const DESCRIPTION_MAX_WORDS = 500;
 
 function countWords(s: string) {
@@ -37,6 +49,7 @@ function countWords(s: string) {
 }
 
 export function ServiceFormFields({
+   mode,
    value,
    onChange,
    additionalOfferingOptions,
@@ -46,18 +59,55 @@ export function ServiceFormFields({
 }: Props) {
    const words = countWords(value.description);
 
-   const set = <K extends keyof ServiceFormValues>(key: K, v: ServiceFormValues[K]) => {
-      onChange({ ...value, [key]: v });
+   const err = (key: string) => errors[key];
+
+   const setCommon = <K extends keyof (CreateSpecialistFormValues & UpdateSpecialistFormValues)>(
+      key: K,
+      v: (CreateSpecialistFormValues & UpdateSpecialistFormValues)[K]
+   ) => {
+      onChange({ ...(value as any), [key]: v } as any);
    };
 
-   const setImageAt = (idx: number, file: File | null) => {
+   // ---------- image setters ----------
+   const setCreateImageAt = (idx: number, file: File | null) => {
+      if (mode !== "create") return;
       const next = [...value.images];
       next[idx] = file;
-      set("images", next);
+      onChange({ ...value, images: next });
       onTouched?.(`images.${idx}`);
    };
 
-   const err = (key: string) => errors[key];
+   const setUpdateImageAt = (idx: 0 | 1 | 2, file: File | null) => {
+      if (mode !== "edit") return;
+
+      const key = `image${idx}` as const satisfies "image0" | "image1" | "image2";
+      onChange({ ...value, [key]: file } as UpdateSpecialistFormValues);
+      onTouched?.(key);
+   };
+
+   // helpers to read current file
+   const getCreateFile = (idx: 0 | 1 | 2) => (mode === "create" ? (value.images[idx] ?? null) : null);
+
+   const getUpdateFile = (idx: 0 | 1 | 2) => {
+      if (mode !== "edit") return null;
+      if (idx === 0) return value.image0 ?? null;
+      if (idx === 1) return value.image1 ?? null;
+      return value.image2 ?? null;
+   };
+
+   const fileAt = (idx: 0 | 1 | 2) => (mode === "create" ? getCreateFile(idx) : getUpdateFile(idx));
+
+   const onFileChange = (idx: 0 | 1 | 2, f: File | null) => {
+      if (mode === "create") return setCreateImageAt(idx, f);
+      return setUpdateImageAt(idx, f);
+   };
+
+   const imageErrorKey = (idx: 0 | 1 | 2) => {
+      // create errors: images.0 / images.1 / images.2
+      if (mode === "create") return `images.${idx}`;
+      // update errors: image0 / image1 / image2
+      return `image${idx}`;
+   };
 
    return (
       <Stack spacing={2.25}>
@@ -69,7 +119,7 @@ export function ServiceFormFields({
                size="small"
                placeholder="Enter your service title"
                value={value.title}
-               onChange={(e) => set("title", e.target.value)}
+               onChange={(e) => setCommon("title", e.target.value)}
                onBlur={() => onTouched?.("title")}
                error={!!err("title")}
             />
@@ -85,7 +135,7 @@ export function ServiceFormFields({
                minRows={5}
                placeholder="Describe your service here"
                value={value.description}
-               onChange={(e) => set("description", e.target.value)}
+               onChange={(e) => setCommon("description", e.target.value)}
                onBlur={() => onTouched?.("description")}
                error={!!err("description")}
             />
@@ -106,7 +156,7 @@ export function ServiceFormFields({
             <FormControl fullWidth size="small" error={!!err("estimatedDays")}>
                <Select
                   value={value.estimatedDays}
-                  onChange={(e) => set("estimatedDays", Number(e.target.value))}
+                  onChange={(e) => setCommon("estimatedDays", Number(e.target.value))}
                   onBlur={() => onTouched?.("estimatedDays")}
                >
                   {[1, 2, 3, 4, 5, 6, 7, 10, 14].map((d) => (
@@ -123,20 +173,10 @@ export function ServiceFormFields({
          <Box>
             <Stack direction="row" alignItems="center" spacing={0.5} sx={{ mb: 0.5 }}>
                <Typography sx={{ fontSize: 14, fontWeight: 500, color: "#222222" }}>Approval Status</Typography>
-
                <Tooltip
                   title="Simplified for now to meet assessment requirement"
                   slotProps={{
-                     tooltip: {
-                        sx: {
-                           bgcolor: "#000",
-                           color: "#fff",
-                           fontSize: 12,
-                           fontWeight: 400,
-                           px: 1,
-                           ml: 3,
-                        },
-                     },
+                     tooltip: { sx: { bgcolor: "#000", color: "#fff", fontSize: 12, fontWeight: 400, px: 1, ml: 3 } },
                   }}
                >
                   <IconButton size="small" sx={{ color: "#888888", p: 0.25 }}>
@@ -148,7 +188,7 @@ export function ServiceFormFields({
             <FormControl fullWidth size="small" error={!!err("status")}>
                <Select
                   value={value.status}
-                  onChange={(e) => set("status", e.target.value as ServiceFormValues["status"])}
+                  onChange={(e) => setCommon("status", e.target.value as CreateSpecialistFormValues["status"])}
                   onBlur={() => onTouched?.("status")}
                   sx={{ textTransform: "capitalize" }}
                >
@@ -182,7 +222,7 @@ export function ServiceFormFields({
                   inputMode="decimal"
                   placeholder="0.00"
                   value={value.price}
-                  onChange={(e) => set("price", e.target.value)}
+                  onChange={(e) => setCommon("price", e.target.value)}
                   onBlur={() => onTouched?.("price")}
                   className="flex-1 px-3 py-2 outline-none text-sm"
                />
@@ -202,7 +242,7 @@ export function ServiceFormFields({
                options={additionalOfferingOptions}
                value={value.additionalOfferings ?? []}
                onChange={(_, next) => {
-                  set("additionalOfferings", next);
+                  setCommon("additionalOfferings", next);
                   onTouched?.("additionalOfferings");
                }}
                onBlur={() => onTouched?.("additionalOfferings")}
@@ -230,29 +270,31 @@ export function ServiceFormFields({
             {!!err("additionalOfferings") && <FormHelperText error>{err("additionalOfferings")}</FormHelperText>}
          </Box>
 
-         {/* Images */}
+         {/* Images (create vs edit) */}
          <ImageUploadField
             label="Service - Image (1st)"
-            file={value.images[0] ?? null}
-            onChange={(f) => setImageAt(0, f)}
-            errorText={err("images.0")}
-            onTouched={() => onTouched?.("images.0")}
+            file={fileAt(0)}
+            onChange={(f) => onFileChange(0, f)}
+            errorText={err(imageErrorKey(0))}
+            onTouched={() => onTouched?.(imageErrorKey(0))}
             existingUrl={existingImageUrls?.[0] ?? null}
          />
+
          <ImageUploadField
             label="Service - Image (2nd)"
-            file={value.images[1] ?? null}
-            onChange={(f) => setImageAt(1, f)}
-            errorText={err("images.1")}
-            onTouched={() => onTouched?.("images.1")}
+            file={fileAt(1)}
+            onChange={(f) => onFileChange(1, f)}
+            errorText={err(imageErrorKey(1))}
+            onTouched={() => onTouched?.(imageErrorKey(1))}
             existingUrl={existingImageUrls?.[1] ?? null}
          />
+
          <ImageUploadField
             label="Service - Image (3rd)"
-            file={value.images[2] ?? null}
-            onChange={(f) => setImageAt(2, f)}
-            errorText={err("images.2")}
-            onTouched={() => onTouched?.("images.2")}
+            file={fileAt(2)}
+            onChange={(f) => onFileChange(2, f)}
+            errorText={err(imageErrorKey(2))}
+            onTouched={() => onTouched?.(imageErrorKey(2))}
             existingUrl={existingImageUrls?.[2] ?? null}
          />
       </Stack>

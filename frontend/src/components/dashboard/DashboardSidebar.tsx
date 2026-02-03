@@ -29,7 +29,8 @@ function NavList({ items, onNavigate }: { items: NavItem[]; onNavigate?: () => v
    return (
       <List disablePadding>
          {items.map((item) => {
-            const active = pathname === item.href && pathname.startsWith(item.href);
+            const active =
+               pathname === item.href || (item.href.includes("/dashboard") && pathname.startsWith(item.href));
 
             return (
                <Box key={item.key}>

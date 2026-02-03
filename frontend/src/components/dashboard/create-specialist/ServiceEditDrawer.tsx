@@ -3,43 +3,63 @@
 import { Box, Button, CircularProgress, Drawer, IconButton, Stack, Typography } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { ServiceFormFields } from "./ServiceFormFields";
-import { ServiceFormValues } from "@/validators/specialist.validator";
 import { ServiceFormErrors } from "@/hooks/useServiceForm";
 import { useEffect } from "react";
 import { useGetRequest } from "@/hooks/useGetRequest";
 import { SpecialistById } from "@/types";
 
-interface Props {
+import { type CreateSpecialistFormValues, type UpdateSpecialistFormValues } from "@/validators/specialist.validator";
+
+type DrawerMode = "edit" | "create";
+
+type FormValuesByMode = {
+   create: CreateSpecialistFormValues;
+   edit: UpdateSpecialistFormValues;
+};
+
+interface Props<M extends DrawerMode = DrawerMode> {
    open: boolean;
    isPending: boolean;
    serviceId?: string;
    onClose: () => void;
-   mode: "edit" | "create";
-   value: ServiceFormValues;
+   mode: M;
+
+   value: FormValuesByMode[M];
    errors?: ServiceFormErrors;
    additionalOfferingOptions: string[];
-   onChange: (next: ServiceFormValues) => void;
+
+   onChange: (next: FormValuesByMode[M]) => void;
    onTouched?: (key: string) => void;
    onConfirm: () => void;
 }
 
-function mapApiToFormValues(d: SpecialistById): ServiceFormValues {
+function normalizeStatus(s: unknown): "under-review" | "approved" | "rejected" {
+   if (s === "under-review" || s === "approved" || s === "rejected") return s;
+   // if API returns something like "pending", map it safely
+   return "under-review";
+}
+
+function mapApiToUpdateFormValues(d: SpecialistById): UpdateSpecialistFormValues {
    return {
       title: d?.title ?? "",
       description: d?.description ?? "",
-      status: d?.approvalStatus ?? "approved",
+      status: normalizeStatus(d?.approvalStatus),
       estimatedDays: Number(d?.durationDays ?? 1),
       additionalOfferings: d?.additionalOfferings ?? [],
       price: d?.price ?? "",
-      images: [null, null, null],
+
+      // update schema fields (optional replacements)
+      image0: null,
+      image1: null,
+      image2: null,
    };
 }
 
-export function ServiceEditDrawer({
+export function ServiceEditDrawer<M extends DrawerMode>({
    open,
    onClose,
    onConfirm,
-   mode = "edit",
+   mode,
    serviceId = "",
    value,
    errors,
@@ -47,7 +67,7 @@ export function ServiceEditDrawer({
    onTouched,
    additionalOfferingOptions,
    isPending,
-}: Props) {
+}: Props<M>) {
    const enabled = open && Boolean(serviceId) && mode === "edit";
 
    const { data, isFetching } = useGetRequest(
@@ -60,10 +80,13 @@ export function ServiceEditDrawer({
    useEffect(() => {
       if (!enabled) return;
       if (!data) return;
-      onChange(mapApiToFormValues(data));
+
+      // only runs in edit mode; cast is safe due to enabled guard
+      (onChange as (next: UpdateSpecialistFormValues) => void)(mapApiToUpdateFormValues(data));
    }, [data, enabled, onChange]);
 
    const title = mode === "create" ? "Create Service" : "Edit Service";
+   const confirmText = mode === "create" ? "Create" : "Update";
 
    return (
       <Drawer
@@ -93,12 +116,13 @@ export function ServiceEditDrawer({
                </Stack>
             ) : (
                <ServiceFormFields
-                  value={value}
-                  onChange={onChange}
+                  value={value as any}
+                  onChange={onChange as any}
                   additionalOfferingOptions={additionalOfferingOptions}
                   errors={errors}
                   onTouched={onTouched}
                   existingImageUrls={data?.media}
+                  mode={mode}
                />
             )}
          </Box>
@@ -140,7 +164,7 @@ export function ServiceEditDrawer({
                         <span className="animate-pulse text-white">Please wait…</span>
                      </Stack>
                   ) : (
-                     "Confirm"
+                     confirmText
                   )}
                </Button>
             </Stack>

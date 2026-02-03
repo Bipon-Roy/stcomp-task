@@ -40,19 +40,21 @@ import ConfirmDeleteDialog from "./ConfirmDeleteServiceDialog";
 import { ServiceEditDrawer } from "./create-specialist/ServiceEditDrawer";
 import { serviceOptions } from "@/utils/serviceOffers";
 import { useServiceForm } from "@/hooks/useServiceForm";
-import { ServiceFormValues } from "@/validators/specialist.validator";
+import { UpdateSpecialistFormValues } from "@/validators/specialist.validator";
 import { useUpdateWithFormData } from "@/hooks/useMutation";
 import { buildServiceFormData } from "@/services/specialistPayload";
 import { useQueryClient } from "@tanstack/react-query";
 
-const initialValues: ServiceFormValues = {
+const initialValues: UpdateSpecialistFormValues = {
    title: "",
    description: "",
    status: "approved",
    estimatedDays: 1,
    price: "",
    additionalOfferings: [],
-   images: [null, null, null],
+   image0: null,
+   image1: null,
+   image2: null,
 };
 
 function RowActions({ onEdit, onDelete }: { onEdit: () => void; onDelete: () => void }) {
@@ -126,7 +128,7 @@ export default function ServicesTable({ tab }: { tab: "all" | "drafts" | "publis
    const [page, setPage] = React.useState(1);
    const [drawerOpen, setDrawerOpen] = React.useState(false);
    const [editId, setEditId] = React.useState<string>("");
-   const form = useServiceForm(initialValues);
+   const form = useServiceForm("update", initialValues);
    const limit = 10;
    const queryClient = useQueryClient();
    const { data, isLoading, isError, error } = usePaginatedRequest<SpecialistItemResponse>(
@@ -157,7 +159,7 @@ export default function ServicesTable({ tab }: { tab: "all" | "drafts" | "publis
 
       if (!r.ok) return;
 
-      const payload = buildServiceFormData(form.value);
+      const payload = buildServiceFormData(form.value, "update");
       updateSpecialist(payload, {
          onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["All_Specialists_Dashboard"] });

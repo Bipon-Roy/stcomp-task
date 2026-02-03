@@ -17,7 +17,9 @@ const fileSchema = z
    .refine((f) => f.size <= MAX_IMAGE_BYTES, `Maximum file size: ${MAX_IMAGE_MB}MB`)
    .refine((f) => ACCEPTED_IMAGE_TYPES.includes(f.type), "Accepted: JPG, PNG, WEBP");
 
-export const serviceFormSchema = z.object({
+const optionalFileSchema = z.union([fileSchema, z.null()]).optional();
+
+export const specialistBodySchema = z.object({
    title: z.string().trim().min(1, "Title is required"),
    description: z
       .string()
@@ -25,8 +27,9 @@ export const serviceFormSchema = z.object({
       .min(1, "Description is required")
       .refine((v) => countWords(v) <= DESCRIPTION_MAX_WORDS, `Maximum ${DESCRIPTION_MAX_WORDS} words`),
 
-   status: z.enum(["pending", "under-review", "approved", "rejected"]),
-   estimatedDays: z.number().min(1, "Estimated days is required"),
+   status: z.enum(["under-review", "approved", "rejected"]),
+   estimatedDays: z.coerce.number().min(1, "Estimated days is required"),
+
    price: z
       .string()
       .trim()
@@ -34,6 +37,10 @@ export const serviceFormSchema = z.object({
       .refine((v) => /^\d+(\.\d{1,2})?$/.test(v), "Use a valid amount (e.g. 0.00, 10, 10.50)"),
 
    additionalOfferings: z.array(z.string()).optional().default([]),
+});
+
+export const createSpecialistSchema = z.object({
+   ...specialistBodySchema.shape,
    images: z
       .array(z.union([fileSchema, z.null()]))
       .length(3, "Exactly 3 image slots are required")
@@ -50,4 +57,13 @@ export const serviceFormSchema = z.object({
       }),
 });
 
-export type ServiceFormValues = z.infer<typeof serviceFormSchema>;
+export const updateSpecialistSchema = z.object({
+   ...specialistBodySchema.shape,
+
+   image0: optionalFileSchema,
+   image1: optionalFileSchema,
+   image2: optionalFileSchema,
+});
+
+export type CreateSpecialistFormValues = z.infer<typeof createSpecialistSchema>;
+export type UpdateSpecialistFormValues = z.infer<typeof updateSpecialistSchema>;

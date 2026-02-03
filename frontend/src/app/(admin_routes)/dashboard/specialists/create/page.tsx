@@ -8,13 +8,14 @@ import { usePost, usePostWithFormData } from "@/hooks/useMutation";
 import { useServiceForm } from "@/hooks/useServiceForm";
 import { buildServiceFormData } from "@/services/specialistPayload";
 import { serviceOptions } from "@/utils/serviceOffers";
-import { ServiceFormValues } from "@/validators/specialist.validator";
+import { showAlert } from "@/utils/showAlert";
+import { CreateSpecialistFormValues } from "@/validators/specialist.validator";
 import { Stack, Typography, Button, Grid } from "@mui/material";
 import { Box } from "@mui/material";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
-const initialValues: ServiceFormValues = {
+const initialValues: CreateSpecialistFormValues = {
    title: "",
    description: "",
    status: "approved",
@@ -27,7 +28,7 @@ const initialValues: ServiceFormValues = {
 export default function CreateSpecialistPage() {
    const [drawerOpen, setDrawerOpen] = useState(false);
    const [publishDialogOpen, setPublishDialogOpen] = useState(false);
-   const form = useServiceForm(initialValues);
+   const form = useServiceForm("create", initialValues);
    const { mutate: createSpecialist, isPending } = usePostWithFormData("Create_Specialist", "/specialist");
    const [createdServiceId, setCreatedServiceId] = useState(null);
    const queryClient = useQueryClient();
@@ -51,6 +52,7 @@ export default function CreateSpecialistPage() {
    };
 
    const handlePublishClick = () => {
+      if (!createdServiceId) return showAlert("Service must be created first before publish!", "error");
       setPublishDialogOpen(true);
    };
 

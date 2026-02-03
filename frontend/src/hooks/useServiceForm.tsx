@@ -1,11 +1,22 @@
-import { serviceFormSchema, ServiceFormValues } from "@/validators/specialist.validator";
+import {
+   createSpecialistSchema,
+   updateSpecialistSchema,
+   type CreateSpecialistFormValues,
+   type UpdateSpecialistFormValues,
+} from "@/validators/specialist.validator";
 import { useCallback, useMemo, useState } from "react";
 import { z } from "zod";
 
 export type ServiceFormErrors = Partial<Record<string, string>>;
 type TouchedMap = Record<string, boolean>;
 
-function zodErrorsToMap(issues: z.ZodIssue[]): ServiceFormErrors {
+type FormMode = "create" | "update";
+type FormValues<M extends FormMode> = M extends "create" ? CreateSpecialistFormValues : UpdateSpecialistFormValues;
+
+// ✅ fixes "ZodIssue is deprecated" warning
+type ZodIssues = z.ZodError["issues"];
+
+function zodErrorsToMap(issues: ZodIssues): ServiceFormErrors {
    const out: ServiceFormErrors = {};
    for (const i of issues) {
       const key = i.path.join(".");
@@ -14,16 +25,22 @@ function zodErrorsToMap(issues: z.ZodIssue[]): ServiceFormErrors {
    return out;
 }
 
-export function useServiceForm(initial: ServiceFormValues) {
-   const [value, setValue] = useState<ServiceFormValues>(initial);
+function getSchema(mode: FormMode) {
+   return mode === "create" ? createSpecialistSchema : updateSpecialistSchema;
+}
+
+export function useServiceForm<M extends FormMode>(mode: M, initial: FormValues<M>) {
+   const schema = useMemo(() => getSchema(mode), [mode]);
+
+   const [value, setValue] = useState<FormValues<M>>(initial);
    const [touched, setTouched] = useState<TouchedMap>({});
 
    const errors = useMemo(() => {
-      const r = serviceFormSchema.safeParse(value);
+      const r = schema.safeParse(value);
       return r.success ? {} : zodErrorsToMap(r.error.issues);
-   }, [value]);
+   }, [schema, value]);
 
-   const onChange = useCallback((next: ServiceFormValues) => {
+   const onChange = useCallback((next: FormValues<M>) => {
       setValue(next);
    }, []);
 
@@ -40,7 +57,7 @@ export function useServiceForm(initial: ServiceFormValues) {
    }, [errors, touched]);
 
    const validateAll = useCallback(() => {
-      const r = serviceFormSchema.safeParse(value);
+      const r = schema.safeParse(value);
       if (r.success) return { ok: true as const, errors: {} as ServiceFormErrors };
 
       const map = zodErrorsToMap(r.error.issues);
@@ -51,9 +68,9 @@ export function useServiceForm(initial: ServiceFormValues) {
       });
 
       return { ok: false as const, errors: map };
-   }, [value]);
+   }, [schema, value]);
 
-   const reset = useCallback((next: ServiceFormValues) => {
+   const reset = useCallback((next: FormValues<M>) => {
       setValue(next);
       setTouched({});
    }, []);

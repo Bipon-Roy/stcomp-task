@@ -1,6 +1,11 @@
-import { ServiceFormValues } from "@/validators/specialist.validator";
+import { CreateSpecialistFormValues, UpdateSpecialistFormValues } from "@/validators/specialist.validator";
 
-export function buildServiceFormData(values: ServiceFormValues) {
+type Mode = "create" | "update";
+
+export function buildServiceFormData(
+   values: CreateSpecialistFormValues | UpdateSpecialistFormValues,
+   mode: Mode = "create"
+) {
    const formData = new FormData();
 
    formData.append("title", values.title);
@@ -9,13 +14,35 @@ export function buildServiceFormData(values: ServiceFormValues) {
    formData.append("estimatedDays", String(values.estimatedDays));
    formData.append("price", values.price);
 
-   // array -> send as JSON string (simplest + reliable)
    formData.append("additionalOfferings", JSON.stringify(values.additionalOfferings ?? []));
 
-   // images: append only if file exists
-   values.images.forEach((file) => {
-      if (file) formData.append("images", file);
-   });
+   // ---------- create mode ----------
+   if (mode === "create") {
+      const createValues = values as CreateSpecialistFormValues;
+
+      createValues.images.forEach((file) => {
+         if (file) {
+            // backend expects multiple under same key
+            formData.append("images", file);
+         }
+      });
+   }
+
+   if (mode === "update") {
+      const updateValues = values as UpdateSpecialistFormValues;
+
+      if (updateValues.image0) {
+         formData.append("image0", updateValues.image0);
+      }
+
+      if (updateValues.image1) {
+         formData.append("image1", updateValues.image1);
+      }
+
+      if (updateValues.image2) {
+         formData.append("image2", updateValues.image2);
+      }
+   }
 
    return formData;
 }
