@@ -69,7 +69,6 @@ export const clearSession = (res: Response) => {
         secure: isProd,
         maxAge: 2 * 24 * 60 * 60 * 1000,
         sameSite: "none",
-        domain: ".vercel.app",
         path: "/",
     });
     res.clearCookie("refreshToken", {
@@ -77,7 +76,6 @@ export const clearSession = (res: Response) => {
         secure: isProd,
         maxAge: 2 * 24 * 60 * 60 * 1000,
         sameSite: "none",
-        domain: ".vercel.app",
         path: "/",
     });
 };

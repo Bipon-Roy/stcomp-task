@@ -24,13 +24,12 @@ router.route("/all-published").get(getAllPublishedSpecialist);
 router
     .route("/")
     .get(getAllSpecialist)
-    .post(verifyToken, upload.array("images", 3), validate(createSpecialistSchema), createSpecialist);
+    .post(upload.array("images", 3), validate(createSpecialistSchema), createSpecialist);
 router
     .route("/:id")
-    .delete(verifyToken, deleteSpecialist)
-    .get(verifyToken, getSpecialistById)
+    .delete(deleteSpecialist)
+    .get(getSpecialistById)
     .put(
-        verifyToken,
         upload.fields([
             { name: "image0", maxCount: 1 },
             { name: "image1", maxCount: 1 },
@@ -39,6 +38,6 @@ router
         validate(updateSpecialistSchema),
         updateSpecialist
     );
-router.route("/publish").post(verifyToken, validate(publishSpecialistSchema), publishSpecialist);
+router.route("/publish").post(validate(publishSpecialistSchema), publishSpecialist);
 
 export default router;

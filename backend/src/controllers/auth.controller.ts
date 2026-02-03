@@ -16,7 +16,6 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
         secure: isProd,
         maxAge: 2 * 24 * 60 * 60 * 1000,
         sameSite: "none",
-        domain: ".vercel.app",
         path: "/",
     };
 
