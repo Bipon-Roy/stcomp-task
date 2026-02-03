@@ -68,14 +68,16 @@ export const clearSession = (res: Response) => {
         httpOnly: false,
         secure: isProd,
         maxAge: 2 * 24 * 60 * 60 * 1000,
-        domain: ".vercel.app", // Note the dot prefix
+        sameSite: "none",
+        domain: ".vercel.app",
         path: "/",
     });
     res.clearCookie("refreshToken", {
         httpOnly: false,
         secure: isProd,
         maxAge: 2 * 24 * 60 * 60 * 1000,
-        domain: ".vercel.app", // Note the dot prefix
+        sameSite: "none",
+        domain: ".vercel.app",
         path: "/",
     });
 };

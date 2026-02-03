@@ -143,7 +143,8 @@ export class AuthService {
             httpOnly: false,
             secure: isProd,
             maxAge: 2 * 24 * 60 * 60 * 1000,
-            domain: ".vercel.app", // Note the dot prefix
+            sameSite: "none",
+            domain: ".vercel.app",
             path: "/",
         };
 
