@@ -1,6 +1,15 @@
 import path from "path";
-import dotenv from "dotenv";
+import os from "os";
+import fs from "fs";
 
-dotenv.config();
+const isVercel = !!process.env.VERCEL;
 
-export const TEMP_DIR = process.env.TEMP_DIR || path.join(__dirname, "./public/temp");
+export const TEMP_DIR = isVercel
+    ? path.join(os.tmpdir(), "uploads")
+    : path.resolve(process.env.TEMP_DIR || "./public/temp");
+
+export const ensureTempDir = () => {
+    if (!fs.existsSync(TEMP_DIR)) {
+        fs.mkdirSync(TEMP_DIR, { recursive: true });
+    }
+};

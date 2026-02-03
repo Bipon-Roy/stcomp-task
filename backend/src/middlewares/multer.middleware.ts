@@ -1,16 +1,17 @@
 import multer, { StorageEngine } from "multer";
 import { Request } from "express";
-import { v4 as uuidv4 } from "uuid";
+import { randomUUID } from "crypto";
 import path from "path";
-import { TEMP_DIR } from "../utils/tempPath";
+import { ensureTempDir, TEMP_DIR } from "../utils/tempPath";
 
-// Set up the storage engine
+ensureTempDir();
+
 const storage: StorageEngine = multer.diskStorage({
     destination: (req: Request, file: Express.Multer.File, cb: (error: any, destination: string) => void) => {
         cb(null, TEMP_DIR);
     },
-    filename: (req: Request, file: Express.Multer.File, cb: (error: any, filename: string) => void) => {
-        const uniqueSuffix = `${Date.now()}-${uuidv4()}`;
+    filename: (req: Request, file, cb) => {
+        const uniqueSuffix = `${Date.now()}-${randomUUID()}`;
         const fileExtension = path.extname(file.originalname);
         cb(null, `${file.fieldname}-${uniqueSuffix}${fileExtension}`);
     },
