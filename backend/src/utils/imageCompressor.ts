@@ -1,11 +1,11 @@
 import sharp from "sharp";
 import path from "path";
-import { v4 as uuidv4 } from "uuid";
+import { randomUUID } from "crypto";
 
 export const compressImage = async (filePath: string): Promise<string> => {
     const compressedFilePath = path.join(
         path.dirname(filePath),
-        `compressed-${uuidv4()}.webp` // Compressed image saved as WebP
+        `compressed-${randomUUID()}.webp` // Compressed image saved as WebP
     );
 
     try {
