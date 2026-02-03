@@ -1,16 +1,16 @@
 {
     "name": "anycomp-backend",
     "version": "1.0.0",
-    "type": "module",
     "main": "src/server.ts",
     "scripts": {
         "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
         "build": "tsc",
-        "start": "node dist/index.js"
+        "start": "node dist/server.js"
     },
     "keywords": [],
     "author": "",
     "license": "ISC",
+    "type": "commonjs",
     "description": "",
     "dependencies": {
         "bcrypt": "^6.0.0",
