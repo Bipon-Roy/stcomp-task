@@ -63,15 +63,17 @@ export const verifyToken = asyncHandler(async (req: Request, res: Response, next
 
 export const clearSession = (res: Response) => {
     res.clearCookie("accessToken", {
-        httpOnly: false,
-        secure: false,
-        maxAge: 1 * 24 * 60 * 60 * 1000,
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "none",
+        maxAge: 2 * 24 * 60 * 60 * 1000,
         path: "/",
     });
     res.clearCookie("refreshToken", {
-        httpOnly: false,
-        secure: false,
-        maxAge: 1 * 24 * 60 * 60 * 1000,
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "none",
+        maxAge: 2 * 24 * 60 * 60 * 1000,
         path: "/",
     });
 };

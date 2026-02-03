@@ -11,9 +11,10 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
     const { user, accessToken, refreshToken } = await AuthService.loginUser(body);
 
     const options: CookieOptions = {
-        httpOnly: false,
-        secure: false,
-        maxAge: 1 * 24 * 60 * 60 * 1000,
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "none",
+        maxAge: 2 * 24 * 60 * 60 * 1000,
         path: "/",
     };
 
