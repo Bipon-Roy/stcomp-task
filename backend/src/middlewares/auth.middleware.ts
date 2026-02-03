@@ -65,15 +65,17 @@ export const clearSession = (res: Response) => {
     const isProd = process.env.VERCEL === "1" || process.env.NODE_ENV === "production";
 
     res.clearCookie("accessToken", {
-        httpOnly: true,
+        httpOnly: false,
         secure: isProd,
         maxAge: 2 * 24 * 60 * 60 * 1000,
+        domain: ".vercel.app", // Note the dot prefix
         path: "/",
     });
     res.clearCookie("refreshToken", {
-        httpOnly: true,
+        httpOnly: false,
         secure: isProd,
         maxAge: 2 * 24 * 60 * 60 * 1000,
+        domain: ".vercel.app", // Note the dot prefix
         path: "/",
     });
 };

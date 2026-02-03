@@ -140,9 +140,10 @@ export class AuthService {
     private static setAuthCookies(res: Response, accessToken: string, refreshToken: string): void {
         const isProd = process.env.VERCEL === "1" || process.env.NODE_ENV === "production";
         const cookieOptions: CookieOptions = {
-            httpOnly: true,
+            httpOnly: false,
             secure: isProd,
             maxAge: 2 * 24 * 60 * 60 * 1000,
+            domain: ".vercel.app", // Note the dot prefix
             path: "/",
         };
 
