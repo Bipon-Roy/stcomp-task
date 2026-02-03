@@ -4,6 +4,7 @@ import { upload } from "../middlewares/multer.middleware";
 import {
     createSpecialist,
     deleteSpecialist,
+    getAllPublishedSpecialist,
     getAllSpecialist,
     getSpecialistById,
     publishSpecialist,
@@ -17,6 +18,8 @@ import {
 } from "../validators/specialist.validator";
 
 const router = Router();
+//Guest Route
+router.route("/all-published").get(getAllPublishedSpecialist);
 
 router
     .route("/")

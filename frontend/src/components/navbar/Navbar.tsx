@@ -110,6 +110,7 @@ export default function Navbar() {
                      color: "text.primary",
                      borderRadius: 1.5,
                      px: 1,
+                     fontWeight: 400,
                   }}
                >
                   {item.label}

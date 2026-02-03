@@ -21,6 +21,12 @@ export const getAllSpecialist = asyncHandler(async (req: Request, res: Response)
     });
     res.status(200).json(new ApiResponse(200, result, "Specialists retrieved successfully"));
 });
+
+export const getAllPublishedSpecialist = asyncHandler(async (req: Request, res: Response) => {
+    const result = await SpecialistServices.getPublishedSpecialist();
+    res.status(200).json(new ApiResponse(200, result, "Published specialists retrieved successfully!"));
+});
+
 export const getSpecialistById = asyncHandler(async (req: Request, res: Response) => {
     const id = req.params.id;
     if (!id || Array.isArray(id)) {

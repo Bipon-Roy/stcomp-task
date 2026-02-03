@@ -7,11 +7,10 @@ import IconButton from "@mui/material/IconButton";
 import Box from "@mui/material/Box";
 import Tooltip from "@mui/material/Tooltip";
 import Avatar from "@mui/material/Avatar";
-import Badge from "@mui/material/Badge";
 import MailOutlineOutlinedIcon from "@mui/icons-material/MailOutlineOutlined";
-import NotificationsNoneOutlinedIcon from "@mui/icons-material/NotificationsNoneOutlined";
 import MenuIcon from "@mui/icons-material/Menu";
 import { useIsMobile } from "@/hooks/useMobile";
+import NotificationIcon from "../ui/NotificationIcon";
 
 type DashboardNavbarProps = {
    onOpenSidebar: () => void;
@@ -53,11 +52,7 @@ export function DashboardNavbar({ onOpenSidebar, showMenuButton = true }: Dashbo
                </Tooltip>
 
                <Tooltip title="Notifications">
-                  <IconButton aria-label="notifications" sx={{ p: 0 }}>
-                     <Badge badgeContent={4} color="error">
-                        <NotificationsNoneOutlinedIcon />
-                     </Badge>
-                  </IconButton>
+                  <NotificationIcon />
                </Tooltip>
 
                <Tooltip title="Profile">

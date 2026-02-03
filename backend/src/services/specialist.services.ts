@@ -2,7 +2,7 @@ import { connectDB } from "../db/db";
 import { MediaType, MimeType, VerificationStatus } from "../entities/enums/specialist.enum";
 import { Media } from "../entities/Media.entity";
 import { Specialist } from "../entities/Specialist.entity";
-import { GetAllSpecialistsParams, SpecialistListItem } from "../types";
+import { GetAllSpecialistsParams, PublishedSpecialistCard, SpecialistListItem } from "../types";
 import { ApiError } from "../utils/apiError";
 import { removeImageFromCloud, uploadOnCloudinary } from "../utils/cloudinary";
 import { compressImage } from "../utils/imageCompressor";
@@ -132,6 +132,45 @@ export class SpecialistServices {
             items,
             meta: buildMeta(page, limit, total),
         };
+    }
+    static async getPublishedSpecialist(): Promise<PublishedSpecialistCard[]> {
+        const db = await connectDB();
+        const repo = db.getRepository(Specialist);
+
+        const rows = await repo
+            .createQueryBuilder("s")
+            .leftJoin(
+                Media,
+                "thumb",
+                `
+            thumb.specialists = s.id
+            AND thumb.deleted_at IS NULL
+            AND thumb.display_order = 0
+            AND thumb.media_type = 'image'
+        `
+            )
+            .where("s.deleted_at IS NULL")
+            .andWhere("s.is_draft = false")
+            .select([
+                "s.id AS id",
+                "s.title AS title",
+                "s.base_price AS base_price",
+                "thumb.file_name AS thumbnail_url",
+            ])
+            .orderBy("s.created_at", "DESC")
+            .getRawMany<{
+                id: string;
+                title: string;
+                base_price: string;
+                thumbnail_url: string | null;
+            }>();
+
+        return rows.map((r) => ({
+            id: r.id,
+            title: r.title,
+            basePrice: r.base_price,
+            thumbnailUrl: r.thumbnail_url ?? null,
+        }));
     }
     static async getAllSpecialistById(id: string) {
         const db = await connectDB();

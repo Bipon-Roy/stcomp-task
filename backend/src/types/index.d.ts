@@ -42,3 +42,10 @@ export type SpecialistListItem = {
     thumbnailUrl: string | null;
     createdAt: Date;
 };
+
+export interface PublishedSpecialistCard {
+    id: string;
+    title: string;
+    basePrice: string;
+    thumbnailUrl: string | null;
+}
