@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 dotenv.config({ path: "./.env" });
 import http from "http";
 import { connectDB, disconnectDB } from "./db/db";
-import { app } from "./app";
+import app from "./app";
 
 const PORT = process.env.PORT || 5000;
 

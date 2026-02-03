@@ -34,4 +34,4 @@ app.use(notFoundHandler);
 // Error handling middleware
 app.use(errorHandler);
 
-export { app };
+export default app;
