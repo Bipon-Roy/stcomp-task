@@ -9,11 +9,12 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
     const body = req.body as ISignInRequest;
 
     const { user, accessToken, refreshToken } = await AuthService.loginUser(body);
+    const isProd = process.env.VERCEL === "1" || process.env.NODE_ENV === "production";
 
     const options: CookieOptions = {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "none",
+        secure: isProd,
+        sameSite: isProd ? "none" : "lax",
         maxAge: 2 * 24 * 60 * 60 * 1000,
         path: "/",
     };

@@ -138,10 +138,11 @@ export class AuthService {
     }
 
     private static setAuthCookies(res: Response, accessToken: string, refreshToken: string): void {
+        const isProd = process.env.VERCEL === "1" || process.env.NODE_ENV === "production";
         const cookieOptions: CookieOptions = {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "none",
+            secure: isProd,
+            sameSite: isProd ? "none" : "lax",
             maxAge: 2 * 24 * 60 * 60 * 1000,
             path: "/",
         };

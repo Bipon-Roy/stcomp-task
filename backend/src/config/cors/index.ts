@@ -1,6 +1,6 @@
 import { CorsOptions } from "cors";
 
-const allowedOrigins = [process.env.FRONTEND_BASE_URL || "http://localhost:3000"];
+const allowedOrigins = [process.env.FRONTEND_BASE_URL || "https://stcomp-task-28yg.vercel.app"];
 
 export const corsConfig: CorsOptions = {
     origin: function (origin, callback) {

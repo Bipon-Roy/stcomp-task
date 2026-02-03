@@ -62,17 +62,19 @@ export const verifyToken = asyncHandler(async (req: Request, res: Response, next
 });
 
 export const clearSession = (res: Response) => {
+    const isProd = process.env.VERCEL === "1" || process.env.NODE_ENV === "production";
+
     res.clearCookie("accessToken", {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "none",
+        secure: isProd,
+        sameSite: isProd ? "none" : "lax",
         maxAge: 2 * 24 * 60 * 60 * 1000,
         path: "/",
     });
     res.clearCookie("refreshToken", {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "none",
+        secure: isProd,
+        sameSite: isProd ? "none" : "lax",
         maxAge: 2 * 24 * 60 * 60 * 1000,
         path: "/",
     });
