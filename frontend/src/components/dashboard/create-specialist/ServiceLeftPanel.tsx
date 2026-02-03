@@ -5,9 +5,10 @@ import SectionHeader from "./SectionHeader";
 import VerifiedIcon from "@mui/icons-material/Verified";
 import Image from "next/image";
 import { useObjectUrl } from "@/components/ui/ImagePreviewer";
-import { ServiceFormValues } from "@/types";
+import { CreateSpecialistFormValues } from "@/validators/specialist.validator";
+
 interface Props {
-   data: ServiceFormValues;
+   data: CreateSpecialistFormValues;
 }
 export default function ServiceLeftPanel({ data }: Props) {
    const img1Url = useObjectUrl((data.images?.[0] as File) ?? null);

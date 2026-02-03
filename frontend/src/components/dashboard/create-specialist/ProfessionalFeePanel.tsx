@@ -1,8 +1,9 @@
 import * as React from "react";
 import { Card, CardContent, Divider, Stack, Typography, Box } from "@mui/material";
-import { ServiceFormValues } from "@/types";
+import { CreateSpecialistFormValues } from "@/validators/specialist.validator";
+
 interface Props {
-   data: ServiceFormValues;
+   data: CreateSpecialistFormValues;
 }
 
 export default function ProfessionalFeePanel({ data }: Props) {
