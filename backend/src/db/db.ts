@@ -1,39 +1,42 @@
 import "reflect-metadata";
 import { DataSource } from "typeorm";
+import path from "path";
 
-let AppDataSource: DataSource | null = null;
+declare global {
+    var __appDataSource: DataSource | undefined;
+}
 
 export const connectDB = async () => {
-    if (AppDataSource && AppDataSource.isInitialized) {
-        return AppDataSource;
+    if (global.__appDataSource?.isInitialized) {
+        return global.__appDataSource;
     }
 
-    if (!process.env.DATABASE_URL) {
-        throw new Error("❌ Missing DATABASE_URL");
-    }
+    const DATABASE_URL = process.env.DATABASE_URL;
+    if (!DATABASE_URL) throw new Error("❌ Missing DATABASE_URL");
 
-    AppDataSource = new DataSource({
+    const entitiesPath = path.join(__dirname, "..", "entities", "*.{ts,js}");
+    const migrationsPath = path.join(__dirname, "..", "migrations", "*.{ts,js}");
+
+    const ds = new DataSource({
         type: "postgres",
-        url: process.env.DATABASE_URL,
-        synchronize: true,
+        url: DATABASE_URL,
+        synchronize: process.env.NODE_ENV !== "production",
         logging: false,
-        entities: [__dirname + "/../entities/*.{ts,js}"],
+        entities: [entitiesPath],
+        migrations: [migrationsPath],
         ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false,
     });
 
-    try {
-        await AppDataSource.initialize();
-        console.log("✅ Database connected ");
-        return AppDataSource;
-    } catch (error) {
-        console.error("❌ Database connection failed:", error);
-        throw error;
-    }
+    global.__appDataSource = ds;
+
+    await ds.initialize();
+    console.log("✅ Database connected");
+    return ds;
 };
 
 export const disconnectDB = async () => {
-    if (AppDataSource && AppDataSource.isInitialized) {
-        await AppDataSource.destroy();
+    if (global.__appDataSource?.isInitialized) {
+        await global.__appDataSource.destroy();
         console.log("🔌 Database connection closed");
     }
 };
