@@ -24,7 +24,7 @@ import {
    useMediaQuery,
    useTheme,
 } from "@mui/material";
-
+import PublishIcon from "@mui/icons-material/Publish";
 import SearchIcon from "@mui/icons-material/Search";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
@@ -41,7 +41,7 @@ import { ServiceEditDrawer } from "./create-specialist/ServiceEditDrawer";
 import { serviceOptions } from "@/utils/serviceOffers";
 import { useServiceForm } from "@/hooks/useServiceForm";
 import { UpdateSpecialistFormValues } from "@/validators/specialist.validator";
-import { useUpdateWithFormData } from "@/hooks/useMutation";
+import { usePost, useUpdateWithFormData } from "@/hooks/useMutation";
 import { buildServiceFormData } from "@/services/specialistPayload";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -57,7 +57,15 @@ const initialValues: UpdateSpecialistFormValues = {
    image2: null,
 };
 
-function RowActions({ onEdit, onDelete }: { onEdit: () => void; onDelete: () => void }) {
+function RowActions({
+   onEdit,
+   onDelete,
+   onPublish,
+}: {
+   onEdit: () => void;
+   onDelete: () => void;
+   onPublish: () => void;
+}) {
    const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
    const open = Boolean(anchorEl);
 
@@ -106,6 +114,18 @@ function RowActions({ onEdit, onDelete }: { onEdit: () => void; onDelete: () => 
             <MenuItem
                onClick={() => {
                   setAnchorEl(null);
+                  onPublish();
+               }}
+               sx={{ py: 1.5, gap: 1.5 }}
+            >
+               <PublishIcon fontSize="medium" />
+               <Typography fontWeight={600}>Publish</Typography>
+            </MenuItem>
+            <Divider sx={{ width: "90%", mx: "auto" }} />
+
+            <MenuItem
+               onClick={() => {
+                  setAnchorEl(null);
                   onDelete();
                }}
                sx={{ py: 1.5, gap: 1.5 }}
@@ -143,7 +163,7 @@ export default function ServicesTable({ tab }: { tab: "all" | "drafts" | "publis
       }
    );
    const { mutate: updateSpecialist, isPending } = useUpdateWithFormData("Update_Specialist", `/specialist/${editId}`);
-
+   const { mutate: publishSpecialist } = usePost("Publish_Specialist", "/specialist/publish");
    const closeEdit = () => {
       setDrawerOpen(false);
       setEditId("");
@@ -156,7 +176,6 @@ export default function ServicesTable({ tab }: { tab: "all" | "drafts" | "publis
 
    const handleUpdateSpecialist = () => {
       const r = form.validateAll();
-
       if (!r.ok) return;
 
       const payload = buildServiceFormData(form.value, "update");
@@ -175,7 +194,6 @@ export default function ServicesTable({ tab }: { tab: "all" | "drafts" | "publis
    const rows = data?.items ?? [];
    const totalRows = data?.meta?.total ?? 0;
 
-   // selection state stays local
    const [selected, setSelected] = React.useState<string[]>([]);
    React.useEffect(() => setSelected([]), [page, tab, query]);
 
@@ -192,6 +210,18 @@ export default function ServicesTable({ tab }: { tab: "all" | "drafts" | "publis
    const openDelete = (id: string, title: string) => {
       setDeleteTarget({ id, title });
       setDeleteOpen(true);
+   };
+   const handlePublish = (id: string) => {
+      if (!id) return;
+
+      publishSpecialist(
+         { serviceId: id },
+         {
+            onSuccess: () => {
+               queryClient.invalidateQueries({ queryKey: ["All_Specialists_Dashboard"] });
+            },
+         }
+      );
    };
 
    const closeDelete = () => {
@@ -384,6 +414,7 @@ export default function ServicesTable({ tab }: { tab: "all" | "drafts" | "publis
                                  <RowActions
                                     onEdit={() => openEdit(row.id)}
                                     onDelete={() => openDelete(row.id, row.title)}
+                                    onPublish={() => handlePublish(row.id)}
                                  />
                               </TableCell>
                            </TableRow>

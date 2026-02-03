@@ -19,8 +19,6 @@ import { ImageUploadField } from "./ImageUploadField";
 import { type CreateSpecialistFormValues, type UpdateSpecialistFormValues } from "@/validators/specialist.validator";
 import { ServiceFormErrors } from "@/hooks/useServiceForm";
 
-type Mode = "create" | "edit";
-
 type Props =
    | {
         mode: "create";
@@ -40,6 +38,9 @@ type Props =
         onTouched?: (key: string) => void;
         existingImageUrls?: (string | null)[];
      };
+type SharedKeys = keyof (CreateSpecialistFormValues & UpdateSpecialistFormValues);
+type SharedValue<K extends SharedKeys> = (CreateSpecialistFormValues & UpdateSpecialistFormValues)[K];
+
 const DESCRIPTION_MAX_WORDS = 500;
 
 function countWords(s: string) {
@@ -61,13 +62,13 @@ export function ServiceFormFields({
 
    const err = (key: string) => errors[key];
 
-   const setCommon = <K extends keyof (CreateSpecialistFormValues & UpdateSpecialistFormValues)>(
-      key: K,
-      v: (CreateSpecialistFormValues & UpdateSpecialistFormValues)[K]
-   ) => {
-      onChange({ ...(value as any), [key]: v } as any);
+   const setCommon = <K extends SharedKeys>(key: K, v: SharedValue<K>) => {
+      if (mode === "create") {
+         onChange({ ...value, [key]: v } as CreateSpecialistFormValues);
+      } else {
+         onChange({ ...value, [key]: v } as UpdateSpecialistFormValues);
+      }
    };
-
    // ---------- image setters ----------
    const setCreateImageAt = (idx: number, file: File | null) => {
       if (mode !== "create") return;

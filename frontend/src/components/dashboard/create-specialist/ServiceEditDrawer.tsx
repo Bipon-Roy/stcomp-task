@@ -10,28 +10,30 @@ import { SpecialistById } from "@/types";
 
 import { type CreateSpecialistFormValues, type UpdateSpecialistFormValues } from "@/validators/specialist.validator";
 
-type DrawerMode = "edit" | "create";
-
-type FormValuesByMode = {
-   create: CreateSpecialistFormValues;
-   edit: UpdateSpecialistFormValues;
-};
-
-interface Props<M extends DrawerMode = DrawerMode> {
+interface BaseDrawerProps {
    open: boolean;
    isPending: boolean;
-   serviceId?: string;
    onClose: () => void;
-   mode: M;
-
-   value: FormValuesByMode[M];
    errors?: ServiceFormErrors;
    additionalOfferingOptions: string[];
-
-   onChange: (next: FormValuesByMode[M]) => void;
    onTouched?: (key: string) => void;
    onConfirm: () => void;
 }
+type Props = BaseDrawerProps &
+   (
+      | {
+           mode: "create";
+           serviceId?: undefined;
+           value: CreateSpecialistFormValues;
+           onChange: (next: CreateSpecialistFormValues) => void;
+        }
+      | {
+           mode: "edit";
+           serviceId: string;
+           value: UpdateSpecialistFormValues;
+           onChange: (next: UpdateSpecialistFormValues) => void;
+        }
+   );
 
 function normalizeStatus(s: unknown): "under-review" | "approved" | "rejected" {
    if (s === "under-review" || s === "approved" || s === "rejected") return s;
@@ -55,7 +57,7 @@ function mapApiToUpdateFormValues(d: SpecialistById): UpdateSpecialistFormValues
    };
 }
 
-export function ServiceEditDrawer<M extends DrawerMode>({
+export function ServiceEditDrawer({
    open,
    onClose,
    onConfirm,
@@ -67,7 +69,7 @@ export function ServiceEditDrawer<M extends DrawerMode>({
    onTouched,
    additionalOfferingOptions,
    isPending,
-}: Props<M>) {
+}: Props) {
    const enabled = open && Boolean(serviceId) && mode === "edit";
 
    const { data, isFetching } = useGetRequest(
@@ -114,15 +116,24 @@ export function ServiceEditDrawer<M extends DrawerMode>({
                   <CircularProgress size={28} />
                   <Typography color="text.secondary">Loading service details…</Typography>
                </Stack>
+            ) : mode === "create" ? (
+               <ServiceFormFields
+                  mode="create"
+                  value={value as CreateSpecialistFormValues}
+                  onChange={onChange as (next: CreateSpecialistFormValues) => void}
+                  additionalOfferingOptions={additionalOfferingOptions}
+                  errors={errors}
+                  onTouched={onTouched}
+               />
             ) : (
                <ServiceFormFields
-                  value={value as any}
-                  onChange={onChange as any}
+                  mode="edit"
+                  value={value as UpdateSpecialistFormValues}
+                  onChange={onChange as (next: UpdateSpecialistFormValues) => void}
                   additionalOfferingOptions={additionalOfferingOptions}
                   errors={errors}
                   onTouched={onTouched}
                   existingImageUrls={data?.media}
-                  mode={mode}
                />
             )}
          </Box>
@@ -160,8 +171,8 @@ export function ServiceEditDrawer<M extends DrawerMode>({
                >
                   {isPending ? (
                      <Stack direction="row" spacing={1} alignItems="center">
-                        <CircularProgress size={18} sx={{ color: "#fff" }} />
-                        <span className="animate-pulse text-white">Please wait…</span>
+                        <CircularProgress size={18} sx={{ color: "#000" }} />
+                        <span className="animate-pulse text-black">Please wait…</span>
                      </Stack>
                   ) : (
                      confirmText
